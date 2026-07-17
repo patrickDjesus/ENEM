@@ -114,6 +114,86 @@ style.textContent = `
     border-color: rgba(231,76,60,0.3);
     background: rgba(231,76,60,0.08);
   }
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    pointer-events: auto;
+    animation: toastIn 0.35s cubic-bezier(0.16,1,0.3,1);
+    backdrop-filter: blur(12px);
+    min-width: 200px;
+    max-width: 360px;
+  }
+  .toast.toast-success { border-left: 3px solid #00b894; }
+  .toast.toast-error { border-left: 3px solid #e17055; }
+  .toast.toast-info { border-left: 3px solid #74b9ff; }
+  .toast-icon { flex-shrink: 0; font-size: 16px; }
+  .toast.toast-exit { animation: toastOut 0.3s ease forwards; }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(40px) scale(0.95); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateX(40px) scale(0.95); }
+  }
+  .btn-back-watch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-back-watch:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
+  }
+  .btn-fullscreen {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-fullscreen:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
 `;
 document.head.appendChild(style);
 
@@ -143,22 +223,13 @@ function updateSidebarUser() {
 }
 
 function initSidebar() {
-  const nav = document.querySelector('.nav');
-  if (nav) {
-    const usuariosLink = document.createElement('a');
-    usuariosLink.href = 'users.html';
-    usuariosLink.className = 'nav-item admin-only hidden';
-    usuariosLink.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Usuarios`;
-    nav.appendChild(usuariosLink);
-  }
-
   const sidebarFooter = document.querySelector('.sidebar-footer');
   if (sidebarFooter) {
     const userDiv = sidebarFooter.querySelector('.user');
     const logoutBtn = document.createElement('button');
     logoutBtn.id = 'logoutBtn';
     logoutBtn.className = 'logout-btn';
-    logoutBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sair`;
+    logoutBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sair</span>`;
     if (userDiv) {
       sidebarFooter.insertBefore(logoutBtn, userDiv);
     } else {
@@ -170,6 +241,90 @@ function initSidebar() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => logout());
   }
+
+  initSidebarCollapse();
+}
+
+function initSidebarCollapse() {
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar) return;
+
+  let collapseBtn = sidebar.querySelector('.sidebar-collapse-btn');
+  if (!collapseBtn) {
+    collapseBtn = document.createElement('button');
+    collapseBtn.className = 'sidebar-collapse-btn';
+    collapseBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+    sidebar.appendChild(collapseBtn);
+  }
+
+  const saved = localStorage.getItem('enem_sidebar_collapsed');
+  if (saved === 'true') {
+    sidebar.classList.add('collapsed');
+    collapseBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+  }
+
+  collapseBtn.addEventListener('click', () => {
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    localStorage.setItem('enem_sidebar_collapsed', isCollapsed);
+    collapseBtn.innerHTML = isCollapsed
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+  });
+}
+
+function renderSidebar(activePage) {
+  const user = getCurrentUser();
+  const userName = user ? user.name : 'Estudante';
+  const userInitial = (userName.split(' ')[0] || 'P')[0].toUpperCase();
+  const isAdmin = user && user.role === 'admin';
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+
+  const pages = [
+    { id: 'home', href: 'home.html', label: 'Inicio', icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>' },
+    { id: 'documents', href: 'documents.html', label: 'Documentos', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
+    { id: 'videos', href: 'videos.html', label: 'Videos', icon: '<polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/>' },
+    { id: 'quizzes', href: 'quizzes.html', label: 'Quizzes', icon: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>' }
+  ];
+
+  const adminPages = [
+    { id: 'users', href: 'users.html', label: 'Usuarios', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' }
+  ];
+
+  const allPages = isAdmin ? [...pages, ...adminPages] : pages;
+
+  const navLinks = allPages.map(p => `
+    <a href="${p.href}" class="nav-item${activePage === p.id ? ' active' : ''}" data-tooltip="${p.label}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p.icon}</svg>
+      <span>${p.label}</span>
+    </a>`).join('');
+
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="home.html" class="logo-link">
+          <span class="logo">ENEM</span>
+          <span class="logo-sub">Study</span>
+        </a>
+      </div>
+      <nav class="nav">
+        ${navLinks}
+      </nav>
+      <div class="sidebar-footer">
+        <button class="theme-toggle" id="themeToggle">
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <span>Tema</span>
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        </button>
+        <div class="user">
+          <div class="avatar">${userInitial}</div>
+          <div class="user-info">
+            <span class="user-name">${userName}</span>
+            <span class="user-role">${isAdmin ? 'Administrador' : 'Estudante'}</span>
+          </div>
+        </div>
+      </div>
+    </aside>`;
 }
 
 /* ==================== RIPPLE EFFECT ==================== */
@@ -309,16 +464,32 @@ function initFocusMode() {
   };
 }
 
+/* ==================== TOAST NOTIFICATIONS ==================== */
+function showToast(message, type = 'info') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const icons = { success: '\u2705', error: '\u274C', info: '\u2139\uFE0F' };
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('toast-exit');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 /* ==================== INIT ==================== */
 document.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle();
-  initEmojiPickers();
-  initSidebar();
   initRipples();
   initFloatingWidget();
   initFocusMode();
 
-  if (!document.querySelector('.right-panel')) {
+  if (!document.querySelector('.right-panel') && !document.getElementById('sidebarRoot')) {
     const user = requireAuth();
     if (user) updateSidebarUser();
   }

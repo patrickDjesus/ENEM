@@ -23,6 +23,7 @@
   --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
   --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
   --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -74,11 +75,120 @@ body {
 
 /* ==================== SIDEBAR ==================== */
 .sidebar {
+  width: var(--sidebar-width);
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   backdrop-filter: blur(20px) saturate(1.2);
   -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  transition: background var(--transition-smooth), border-color var(--transition-smooth);
+  transition: width 0.3s cubic-bezier(0.4,0,0.2,1), background var(--transition-smooth), border-color var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+  padding: 20px 8px;
+}
+
+.sidebar.collapsed .sidebar-header,
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .sidebar-footer .theme-toggle span,
+.sidebar.collapsed .sidebar-footer .user-info,
+.sidebar.collapsed .sidebar-footer .logout-btn span {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+  gap: 0;
+}
+
+.sidebar.collapsed .nav-item::after {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-footer .theme-toggle {
+  justify-content: center;
+  padding: 10px;
+}
+
+.sidebar.collapsed .sidebar-footer .user {
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-footer .logout-btn {
+  justify-content: center;
+  padding: 10px;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn {
+  right: 8px;
+}
+
+.sidebar-collapse-btn {
+  position: absolute;
+  top: 18px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 5;
+  flex-shrink: 0;
+}
+
+.sidebar-collapse-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+/* ==================== SIDEBAR TOOLTIPS (collapsed) ==================== */
+.sidebar.collapsed .nav-item {
+  position: relative;
+}
+
+.sidebar.collapsed .nav-item::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+}
+
+.sidebar.collapsed .nav-item:hover::before {
+  opacity: 1;
 }
 
 /* ==================== THEME TOGGLE ==================== */
@@ -1018,4 +1128,148 @@ body.focus-active .topbar {
 .ranking-quizzes {
   font-size: 11px;
   color: var(--text-dim);
+}
+
+/* ==================== DESIGN IMPROVEMENTS ==================== */
+
+/* Smooth page transitions */
+.main {
+  animation: pageIn 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+/* Card stagger animation */
+.video-card, .doc-card, .quiz-card {
+  animation: cardIn 0.4s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+/* Glassmorphism on cards */
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Animated gradient on stat icons */
+.stat-icon {
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.stat-icon:hover {
+  transform: scale(1.08);
+}
+
+/* Button shine effect */
+.btn-primary:hover::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255,255,255,0.15) 50%,
+    transparent 70%
+  );
+  animation: shine 0.6s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes shine {
+  from { transform: translateX(-100%) rotate(45deg); }
+  to { transform: translateX(100%) rotate(45deg); }
+}
+
+/* Counter animation helper */
+.counter-animate {
+  transition: all 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Floating animation for empty states */
+.empty-icon {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Pulse glow on active nav item */
+.nav-item.active {
+  position: relative;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  opacity: 0;
+  animation: pulseGlow 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.04; }
+}
+
+/* Better focus states */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-bg) !important;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Card hover glow */
+.video-card:hover, .doc-card:hover {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 0 0 1px var(--border-hover);
+}
+
+/* Toast improvements */
+.toast {
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+
+/* Subtle background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, var(--accent-bg) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, var(--accent-bg-2) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.5;
 }
