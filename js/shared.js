@@ -477,7 +477,7 @@ function renderSidebar(activePage) {
 
   const navLinks = allPages.map(p => `
     <a href="${p.href}" class="nav-item${activePage === p.id ? ' active' : ''}" data-tooltip="${p.label}">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p.icon}</svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p.icon}</svg>
       <span>${p.label}</span>
     </a>`).join('');
 
