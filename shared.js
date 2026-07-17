@@ -172,11 +172,151 @@ function initSidebar() {
   }
 }
 
+/* ==================== RIPPLE EFFECT ==================== */
+function initRipples() {
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-primary, .btn-submit, .btn-login, .btn-play, .btn-quiz, button[role="submit"]');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    btn.style.position = btn.style.position || 'relative';
+    btn.style.overflow = 'hidden';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+}
+
+/* ==================== SKELETON LOADERS ==================== */
+function showSkeletons(container, count, type) {
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'skeleton skeleton-' + (type || 'card');
+    el.style.animationDelay = (i * 0.1) + 's';
+    container.appendChild(el);
+  }
+}
+
+/* ==================== FLOATING WIDGET ==================== */
+function initFloatingWidget() {
+  if (document.querySelector('.floating-widget') || !document.querySelector('.main')) return;
+  
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const widget = document.createElement('div');
+  widget.className = 'floating-widget';
+  widget.innerHTML = `
+    <div class="widget-panel" id="widgetPanel">
+      <div class="widget-tabs">
+        <button class="widget-tab active" data-tab="notes">Rascunho</button>
+        <button class="widget-tab" data-tab="calc">Calculadora</button>
+      </div>
+      <div class="widget-body" id="widgetBody">
+        <div id="tabNotes">
+          <textarea id="widgetNotes" placeholder="Escreva seus apontamentos aqui...">${localStorage.getItem('enem_widget_notes') || ''}</textarea>
+        </div>
+        <div id="tabCalc" style="display:none">
+          <div class="calc-display" id="calcDisplay">0</div>
+          <div class="calc-grid">
+            <button class="calc-btn" data-val="C">C</button>
+            <button class="calc-btn op" data-val="(">(</button>
+            <button class="calc-btn op" data-val=")">)</button>
+            <button class="calc-btn op" data-val="/">&divide;</button>
+            <button class="calc-btn" data-val="7">7</button>
+            <button class="calc-btn" data-val="8">8</button>
+            <button class="calc-btn" data-val="9">9</button>
+            <button class="calc-btn op" data-val="*">&times;</button>
+            <button class="calc-btn" data-val="4">4</button>
+            <button class="calc-btn" data-val="5">5</button>
+            <button class="calc-btn" data-val="6">6</button>
+            <button class="calc-btn op" data-val="-">&minus;</button>
+            <button class="calc-btn" data-val="1">1</button>
+            <button class="calc-btn" data-val="2">2</button>
+            <button class="calc-btn" data-val="3">3</button>
+            <button class="calc-btn op" data-val="+">+</button>
+            <button class="calc-btn" data-val="0">0</button>
+            <button class="calc-btn" data-val=".">.</button>
+            <button class="calc-btn" data-val="backspace">&larr;</button>
+            <button class="calc-btn eq" data-val="=">=</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="widget-toggle" id="widgetToggle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </button>
+  `;
+  document.body.appendChild(widget);
+
+  document.getElementById('widgetToggle').addEventListener('click', () => {
+    document.getElementById('widgetPanel').classList.toggle('show');
+  });
+
+  document.querySelectorAll('.widget-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.widget-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tabNotes').style.display = tab.dataset.tab === 'notes' ? '' : 'none';
+      document.getElementById('tabCalc').style.display = tab.dataset.tab === 'calc' ? '' : 'none';
+    });
+  });
+
+  const notesArea = document.getElementById('widgetNotes');
+  notesArea.addEventListener('input', () => {
+    localStorage.setItem('enem_widget_notes', notesArea.value);
+  });
+
+  const calcDisplay = document.getElementById('calcDisplay');
+  let calcExpr = '';
+  document.querySelectorAll('.calc-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.val;
+      if (val === 'C') { calcExpr = ''; calcDisplay.textContent = '0'; }
+      else if (val === 'backspace') { calcExpr = calcExpr.slice(0, -1); calcDisplay.textContent = calcExpr || '0'; }
+      else if (val === '=') {
+        try { calcDisplay.textContent = Function('"use strict";return (' + calcExpr + ')')(); calcExpr = calcDisplay.textContent; }
+        catch { calcDisplay.textContent = 'Erro'; calcExpr = ''; }
+      }
+      else { calcExpr += val; calcDisplay.textContent = calcExpr; }
+    });
+  });
+}
+
+/* ==================== FOCUS MODE ==================== */
+function initFocusMode() {
+  window.enableFocusMode = function(contentEl) {
+    document.body.classList.add('focus-active');
+    let overlay = document.querySelector('.focus-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'focus-overlay';
+      document.body.appendChild(overlay);
+    }
+    overlay.classList.add('active');
+    overlay.onclick = function() { window.disableFocusMode(); };
+  };
+
+  window.disableFocusMode = function() {
+    document.body.classList.remove('focus-active');
+    const overlay = document.querySelector('.focus-overlay');
+    if (overlay) overlay.classList.remove('active');
+  };
+}
+
 /* ==================== INIT ==================== */
 document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   initEmojiPickers();
   initSidebar();
+  initRipples();
+  initFloatingWidget();
+  initFocusMode();
 
   if (!document.querySelector('.right-panel')) {
     const user = requireAuth();

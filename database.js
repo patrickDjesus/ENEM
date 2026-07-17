@@ -363,6 +363,180 @@ async function removeQuiz(id) {
   setLS('quizzes', getLS('quizzes').filter(q => q.id !== id));
 }
 
+/* ==================== PINS (FAVORITES) ==================== */
+function getPinned() {
+  return getLS('pinned');
+}
+
+function togglePin(type, id) {
+  const pins = getPinned();
+  const key = type + '_' + id;
+  const idx = pins.indexOf(key);
+  if (idx >= 0) { pins.splice(idx, 1); } else { pins.push(key); }
+  setLS('pinned', pins);
+  return idx < 0;
+}
+
+function isPinned(type, id) {
+  return getPinned().includes(type + '_' + id);
+}
+
+/* ==================== PROGRESS (CONTINUE WHERE LEFT OFF) ==================== */
+function saveProgress(type, id, data) {
+  const progress = getLS('progress');
+  const key = type + '_' + id;
+  const existing = progress.findIndex(p => p.key === key);
+  const entry = { key, type, id, ...data, updated_at: new Date().toISOString() };
+  if (existing >= 0) progress[existing] = entry; else progress.push(entry);
+  setLS('progress', progress);
+}
+
+function getProgress(type, id) {
+  const progress = getLS('progress');
+  return progress.find(p => p.key === (type + '_' + id)) || null;
+}
+
+function getRecentProgress() {
+  const progress = getLS('progress');
+  return progress.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 5);
+}
+
+/* ==================== COMMENTS ==================== */
+async function getComments(targetType, targetId) {
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('comments')
+        .select('*')
+        .eq('target_type', targetType)
+        .eq('target_id', targetId)
+        .order('created_at', { ascending: true });
+      if (!error && data) { setLS('comments_' + targetType + '_' + targetId, data); return data; }
+    } catch(e) { console.warn('Supabase getComments failed:', e); }
+  }
+  return getLS('comments_' + targetType + '_' + targetId);
+}
+
+async function addComment(targetType, targetId, userId, userName, text) {
+  const comment = {
+    id: Date.now(),
+    target_type: targetType,
+    target_id: targetId,
+    user_id: userId,
+    user_name: userName,
+    text,
+    created_at: new Date().toISOString()
+  };
+  if (sb) {
+    try {
+      const { error } = await sb.from('comments').insert(comment);
+      if (error) throw error;
+    } catch(e) { console.warn('Supabase addComment failed:', e); }
+  }
+  const key = 'comments_' + targetType + '_' + targetId;
+  const comments = getLS(key);
+  comments.push(comment);
+  setLS(key, comments);
+  return comment;
+}
+
+async function removeComment(targetType, targetId, commentId) {
+  if (sb) {
+    try { await sb.from('comments').delete().eq('id', commentId); } catch(e) {}
+  }
+  const key = 'comments_' + targetType + '_' + targetId;
+  setLS(key, getLS(key).filter(c => c.id !== commentId));
+}
+
+/* ==================== QUIZ RESULTS (RANKING) ==================== */
+async function saveQuizResult(quizId, quizTitle, userId, userName, score, total, subject) {
+  const result = {
+    id: Date.now(),
+    quiz_id: quizId,
+    quiz_title: quizTitle,
+    user_id: userId,
+    user_name: userName,
+    score,
+    total,
+    pct: Math.round((score / total) * 100),
+    subject,
+    created_at: new Date().toISOString()
+  };
+  if (sb) {
+    try {
+      const { error } = await sb.from('quiz_results').insert(result);
+      if (error) throw error;
+    } catch(e) { console.warn('Supabase saveQuizResult failed:', e); }
+  }
+  const results = getLS('quiz_results');
+  results.push(result);
+  setLS('quiz_results', results);
+  return result;
+}
+
+async function getRanking() {
+  let results = [];
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('quiz_results').select('*').order('created_at', { ascending: false });
+      if (!error && data) { results = data; setLS('quiz_results', data); }
+    } catch(e) {}
+  }
+  if (results.length === 0) results = getLS('quiz_results');
+  
+  const userStats = {};
+  results.forEach(r => {
+    if (!userStats[r.user_id]) {
+      userStats[r.user_id] = { user_id: r.user_id, user_name: r.user_name, total_score: 0, total_quizzes: 0, best_pct: 0 };
+    }
+    userStats[r.user_id].total_score += r.pct;
+    userStats[r.user_id].total_quizzes++;
+    userStats[r.user_id].best_pct = Math.max(userStats[r.user_id].best_pct, r.pct);
+  });
+  
+  return Object.values(userStats)
+    .map(u => ({ ...u, avg_pct: Math.round(u.total_score / u.total_quizzes) }))
+    .sort((a, b) => b.avg_pct - a.avg_pct || b.total_quizzes - a.total_quizzes);
+}
+
+async function getWeeklyRanking() {
+  let results = [];
+  if (sb) {
+    try {
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data, error } = await sb.from('quiz_results').select('*').gte('created_at', weekAgo).order('created_at', { ascending: false });
+      if (!error && data) { results = data; }
+    } catch(e) {}
+  }
+  if (results.length === 0) {
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    results = getLS('quiz_results').filter(r => r.created_at >= weekAgo);
+  }
+  
+  const userStats = {};
+  results.forEach(r => {
+    if (!userStats[r.user_id]) {
+      userStats[r.user_id] = { user_id: r.user_id, user_name: r.user_name, total_score: 0, total_quizzes: 0 };
+    }
+    userStats[r.user_id].total_score += r.pct;
+    userStats[r.user_id].total_quizzes++;
+  });
+  
+  return Object.values(userStats)
+    .map(u => ({ ...u, avg_pct: Math.round(u.total_score / u.total_quizzes) }))
+    .sort((a, b) => b.avg_pct - a.avg_pct);
+}
+
+/* ==================== TIME ESTIMATES ==================== */
+function estimateTime(type, data) {
+  if (type === 'doc') {
+    const sizeMB = parseFloat(data.file_size) || 1;
+    return Math.max(5, Math.round(sizeMB * 8));
+  }
+  if (type === 'video') return 12;
+  if (type === 'quiz') return Math.max(3, (data.questions ? data.questions.length : 5) * 2);
+  return 5;
+}
+
 /* ==================== YOUTUBE ==================== */
 function getYoutubeId(url) {
   if (!url) return null;

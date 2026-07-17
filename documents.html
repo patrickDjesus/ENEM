@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="documents.css">
 </head>
 <body>
+  <div class="reading-progress" id="readingProgress"><div class="reading-progress-fill" id="readingProgressFill"></div></div>
 
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -59,10 +60,16 @@
         <h1>Documentos</h1>
         <p>Organize seus materiais de estudo em PDF</p>
       </div>
-      <button class="btn-primary" id="btnAdd">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar documentos..." id="searchInput">
+        </div>
+        <button class="btn-primary" id="btnAdd">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Adicionar Documento
       </button>
+      </div>
     </header>
 
     <div class="filters" id="filters"></div>
@@ -131,6 +138,14 @@
         Abrir em nova aba
       </button>
     </div>
+      <div class="comments-section" id="docComments" style="display:none;padding:0 24px 20px;">
+        <h3>Comentarios</h3>
+        <div class="comment-input-row">
+          <input type="text" id="commentInput" placeholder="Duvida ou comentario...">
+          <button id="btnComment">Enviar</button>
+        </div>
+        <div id="commentsList"></div>
+      </div>
     <iframe id="pdfFrame" class="pdf-frame"></iframe>
   </div>
 
@@ -147,6 +162,7 @@
       });
 
       let activeFilter = null;
+      let currentDocId = null;
 
       async function renderDocs(filter) {
         activeFilter = filter || null;
@@ -161,9 +177,12 @@
           empty.style.display = 'none';
           docs.forEach(doc => {
             const s = SUBJECTS[doc.subject];
+            const pinned = isPinned('doc', doc.id);
+            const timeEst = estimateTime('doc', doc);
+            const progress = getProgress('doc', doc.id);
             const el = document.createElement('div');
             el.className = 'doc-card';
-            el.style.setProperty('--subject-color', s ? s.color : '#666');
+            el.dataset.searchText = (doc.title + ' ' + (doc.description || '') + ' ' + (s ? s.name : '')).toLowerCase();
             el.innerHTML = `
               <div class="doc-left">
                 <div class="doc-icon">
@@ -172,13 +191,15 @@
                 <div class="doc-info">
                   <h3>${doc.title}</h3>
                   <div class="doc-meta">
-                    <span class="doc-subject" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
+                    <span class="doc-subject">${s ? s.name : 'Geral'}</span>
                     <span class="doc-date">${formatDate(doc.created_at)}</span>
+                    <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
                   </div>
                   ${doc.description ? `<p class="doc-desc">${doc.description}</p>` : ''}
                 </div>
               </div>
               <div class="doc-actions">
+                <button class="pin-btn ${pinned ? 'pinned' : ''}" data-id="${doc.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
                 <button class="btn-icon btn-view" title="Visualizar">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
@@ -194,6 +215,12 @@
                 await renderDocs(activeFilter);
                 await renderFilters();
               }
+            });
+            el.querySelector('.pin-btn').addEventListener('click', (e) => {
+              e.stopPropagation();
+              const nowPinned = togglePin('doc', doc.id);
+              el.querySelector('.pin-btn').classList.toggle('pinned', nowPinned);
+              el.querySelector('.pin-btn').textContent = nowPinned ? '\u{1F4CC}' : '\u{1F4CE}';
             });
             list.appendChild(el);
           });
@@ -221,23 +248,50 @@
         });
       }
 
+      async function renderComments(docId) {
+        const comments = await getComments('doc', docId);
+        const list = document.getElementById('commentsList');
+        list.innerHTML = '';
+        comments.forEach(c => {
+          const el = document.createElement('div');
+          el.className = 'comment-item';
+          el.innerHTML = `
+            <div class="comment-avatar">${(c.user_name || '?')[0].toUpperCase()}</div>
+            <div class="comment-body">
+              <div class="comment-meta"><strong>${c.user_name}</strong> ${formatDate(c.created_at)}</div>
+              <div class="comment-text">${c.text}</div>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+      }
+
       function viewDoc(doc) {
         const s = SUBJECTS[doc.subject];
+        currentDocId = doc.id;
         document.getElementById('pdfTitle').textContent = doc.title;
         const sub = document.getElementById('pdfSubject');
         sub.textContent = s ? s.name : 'Geral';
-        sub.style.color = s ? s.color : '#666';
-        document.getElementById('pdfFrame').src = doc.file_url || doc.file_data || doc.fileUrl || doc.fileData || '';
+        sub.style.color = '';
+        document.getElementById('pdfFrame').src = doc.file_url || doc.file_data || '';
         document.querySelector('.main').classList.add('hidden');
         document.getElementById('pdfViewer').classList.add('active');
+        document.getElementById('docComments').style.display = '';
+        document.getElementById('readingProgress').classList.add('active');
+        saveProgress('doc', doc.id, { title: doc.title, subject: doc.subject });
+        renderComments(doc.id);
+        if (window.enableFocusMode) window.enableFocusMode();
       }
 
-      // PDF Viewer close
       document.getElementById('pdfBack').addEventListener('click', closePdfViewer);
       function closePdfViewer() {
         document.getElementById('pdfViewer').classList.remove('active');
         document.querySelector('.main').classList.remove('hidden');
         document.getElementById('pdfFrame').src = '';
+        document.getElementById('docComments').style.display = 'none';
+        document.getElementById('readingProgress').classList.remove('active');
+        currentDocId = null;
+        if (window.disableFocusMode) window.disableFocusMode();
       }
 
       document.getElementById('btnOpenExternal').addEventListener('click', () => {
@@ -245,13 +299,41 @@
         if (src) window.open(src, '_blank');
       });
 
-      // Add modal
+      document.getElementById('btnComment').addEventListener('click', async () => {
+        const input = document.getElementById('commentInput');
+        const text = input.value.trim();
+        if (!text || !currentDocId) return;
+        const user = getCurrentUser();
+        await addComment('doc', currentDocId, user.id, user.name, text);
+        input.value = '';
+        renderComments(currentDocId);
+      });
+
+      document.getElementById('commentInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('btnComment').click();
+      });
+
+      // PDF reading progress
+      const pdfFrame = document.getElementById('pdfFrame');
+      pdfFrame.addEventListener('load', () => {
+        try {
+          const doc = pdfFrame.contentDocument || pdfFrame.contentWindow.document;
+          if (doc && doc.body) {
+            doc.addEventListener('scroll', () => {
+              const scrollH = doc.documentElement.scrollHeight - doc.documentElement.clientHeight;
+              const pct = scrollH > 0 ? (doc.documentElement.scrollTop / scrollH) * 100 : 0;
+              document.getElementById('readingProgressFill').style.width = pct + '%';
+              if (currentDocId) saveProgress('doc', currentDocId, { scroll_pct: pct });
+            });
+          }
+        } catch(e) {}
+      });
+
       const overlay = document.getElementById('modalOverlay');
       document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
       document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
 
-      // File input
       const fileInput = document.getElementById('docFile');
       const fileInputBox = document.getElementById('fileInput');
       fileInputBox.addEventListener('click', () => fileInput.click());
@@ -261,7 +343,6 @@
         }
       });
 
-      // Submit
       document.getElementById('docForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const file = fileInput.files[0];
@@ -283,26 +364,21 @@
           let file_path = '';
           let storageAvailable = false;
 
-        if (sb) {
-          try {
-            file_path = `pdfs/${Date.now()}_${file.name}`;
-            const { data, error } = await sb.storage
-              .from(BUCKET)
-              .upload(file_path, file, { contentType: 'application/pdf' });
-
-            if (error) throw error;
-
-            const { data: urlData } = sb.storage
-              .from(BUCKET)
-              .getPublicUrl(file_path);
-
+          if (sb) {
+            try {
+              file_path = `pdfs/${Date.now()}_${file.name}`;
+              const { data, error } = await sb.storage
+                .from(BUCKET)
+                .upload(file_path, file, { contentType: 'application/pdf' });
+              if (error) throw error;
+              const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(file_path);
               file_url = urlData.publicUrl;
               storageAvailable = true;
-          } catch(storageErr) {
-            console.warn('Storage upload failed, falling back to base64:', storageErr);
-            file_path = '';
+            } catch(storageErr) {
+              console.warn('Storage upload failed, falling back to base64:', storageErr);
+              file_path = '';
+            }
           }
-        }
 
           if (!storageAvailable) {
             file_url = await new Promise((resolve) => {
@@ -334,6 +410,15 @@
           btnSubmit.disabled = false;
           btnText.textContent = 'Salvar Documento';
         }
+      });
+
+      document.getElementById('searchInput').addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        document.querySelectorAll('.doc-card').forEach(c => {
+          c.classList.remove('search-highlight', 'search-dimmed');
+          if (q && c.dataset.searchText && c.dataset.searchText.includes(q)) c.classList.add('search-highlight');
+          else if (q) c.classList.add('search-dimmed');
+        });
       });
 
       await renderDocs(null);

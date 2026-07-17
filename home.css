@@ -190,46 +190,6 @@ body {
   color: var(--text-dim);
 }
 
-.search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-input);
-  border-radius: 8px;
-  padding: 10px 16px;
-  transition: all 0.3s ease;
-}
-
-.search:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-
-.search svg {
-  color: var(--text-ghost);
-  flex-shrink: 0;
-  transition: color 0.3s ease;
-}
-
-.search:focus-within svg {
-  color: var(--accent);
-}
-
-.search input {
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-family: 'Inter', sans-serif;
-  width: 200px;
-}
-
-.search input::placeholder {
-  color: var(--text-ghost);
-}
-
 /* ==================== STATS ==================== */
 .stats {
   display: grid;

@@ -206,6 +206,17 @@
         <p>Nenhum quiz criado ainda.</p>
       </div>
     </section>
+
+    <section class="content-section ranking-section" id="rankingSection">
+      <div class="section-header">
+        <h2>Ranking</h2>
+      </div>
+      <div class="ranking-tabs">
+        <button class="ranking-tab active" data-tab="all">Global</button>
+        <button class="ranking-tab" data-tab="week">Semanal</button>
+      </div>
+      <div class="ranking-list"></div>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -242,15 +253,22 @@
       } else {
         all.forEach(item => {
           const s = SUBJECTS[item.subject];
+          const pinned = isPinned(item._type, item.id);
+          const timeEst = estimateTime(item._type, item);
           const card = document.createElement('div');
-          card.className = 'card';
-          card.style.borderLeftColor = s ? s.color : '#333';
+          card.className = 'card ripple-container';
+          card.dataset.searchText = (item.title + ' ' + (item.description || '') + ' ' + (s ? s.name : '')).toLowerCase();
           card.innerHTML = `
-            <div class="card-badge" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">
-              ${item._type === 'doc' ? 'PDF' : 'Video'}
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="card-badge">${item._type === 'doc' ? 'PDF' : 'Video'}</div>
+              <button class="pin-btn ${pinned ? 'pinned' : ''}" data-pin-type="${item._type}" data-pin-id="${item.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
             </div>
             <h3>${item.title}</h3>
             <p>${item.description || (s ? s.name : '')}</p>
+            <div class="time-estimate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+              ~${timeEst} min
+            </div>
           `;
           rc.appendChild(card);
         });
@@ -269,11 +287,21 @@
         const el = document.createElement('div');
         el.className = 'subject-row';
         el.innerHTML = `
-          <div class="subject-dot" style="background:${s.color}"></div>
+          <div class="subject-dot"></div>
           <span class="subject-name">${s.name}</span>
-          <div class="subject-bar"><div class="subject-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+          <div class="subject-bar"><div class="subject-bar-fill"></div></div>
           <span class="subject-count">${count}</span>
         `;
+        el.addEventListener('mouseenter', () => {
+          el.querySelector('.subject-dot').style.background = s.color;
+          el.querySelector('.subject-bar-fill').style.background = s.color;
+          el.querySelector('.subject-bar-fill').style.width = pct + '%';
+        });
+        el.addEventListener('mouseleave', () => {
+          el.querySelector('.subject-dot').style.background = '';
+          el.querySelector('.subject-bar-fill').style.background = '';
+          el.querySelector('.subject-bar-fill').style.width = '0%';
+        });
         sb.appendChild(el);
       });
 
@@ -287,29 +315,82 @@
         topQuizzes.forEach(q => {
           const s = SUBJECTS[q.subject];
           const card = document.createElement('div');
-          card.className = 'quiz-card';
+          card.className = 'quiz-card ripple-container';
           card.innerHTML = `
             <div class="quiz-info">
-              <span class="quiz-subject" style="color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
+              <span class="quiz-subject">${s ? s.name : 'Geral'}</span>
               <h3>${q.title}</h3>
               <p>${q.questions.length} questoes</p>
             </div>
             <div class="quiz-action">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
             </div>
           `;
           qg.appendChild(card);
         });
       }
 
-      // Search
+      // Search with highlight
       document.getElementById('searchInput').addEventListener('input', function () {
-        const q = this.value.toLowerCase();
+        const q = this.value.toLowerCase().trim();
         const cards = rc.querySelectorAll('.card');
         cards.forEach(c => {
-          c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+          c.classList.remove('search-highlight', 'search-dimmed');
+          if (q && c.dataset.searchText && c.dataset.searchText.includes(q)) {
+            c.classList.add('search-highlight');
+          } else if (q) {
+            c.classList.add('search-dimmed');
+          }
         });
       });
+
+      // Pin buttons
+      rc.addEventListener('click', async function(e) {
+        const pinBtn = e.target.closest('.pin-btn');
+        if (pinBtn) {
+          e.stopPropagation();
+          const type = pinBtn.dataset.pinType;
+          const id = parseInt(pinBtn.dataset.pinId);
+          const nowPinned = togglePin(type, id);
+          pinBtn.classList.toggle('pinned', nowPinned);
+          pinBtn.textContent = nowPinned ? '\u{1F4CC}' : '\u{1F4CE}';
+        }
+      });
+
+      // Ranking section
+      const rankSection = document.getElementById('rankingSection');
+      if (rankSection) {
+        let rankTab = 'all';
+        async function renderRanking(tab) {
+          rankTab = tab;
+          const ranking = tab === 'week' ? await getWeeklyRanking() : await getRanking();
+          const list = rankSection.querySelector('.ranking-list');
+          list.innerHTML = '';
+          if (ranking.length === 0) {
+            list.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:13px;padding:20px;">Nenhum resultado ainda</p>';
+            return;
+          }
+          ranking.forEach((r, i) => {
+            const el = document.createElement('div');
+            el.className = 'ranking-item';
+            el.innerHTML = `
+              <div class="ranking-pos">${i + 1}</div>
+              <span class="ranking-name">${r.user_name}</span>
+              <span class="ranking-quizzes">${r.total_quizzes} quiz${r.total_quizzes > 1 ? 'zes' : ''}</span>
+              <span class="ranking-score">${r.avg_pct}%</span>
+            `;
+            list.appendChild(el);
+          });
+        }
+        rankSection.querySelectorAll('.ranking-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            rankSection.querySelectorAll('.ranking-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderRanking(tab.dataset.tab);
+          });
+        });
+        renderRanking('all');
+      }
     })();
   </script>
   <script src="shared.js"></script>

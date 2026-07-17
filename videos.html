@@ -59,10 +59,16 @@
         <h1>Videos</h1>
         <p>Assista aulas e faca anotacoes diretamente aqui</p>
       </div>
-      <button class="btn-primary" id="btnAdd">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Adicionar Video
-      </button>
+      <div class="topbar-right">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar videos..." id="searchInput">
+        </div>
+        <button class="btn-primary" id="btnAdd">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar Video
+        </button>
+      </div>
     </header>
 
     <div class="filters" id="filters"></div>
@@ -137,6 +143,15 @@
         </div>
         <div id="notesList" class="notes-list"></div>
       </div>
+
+      <div class="comments-section">
+        <h3>Comentarios</h3>
+        <div class="comment-input-row">
+          <input type="text" id="videoCommentInput" placeholder="Duvida ou comentario...">
+          <button id="videoCommentBtn">Enviar</button>
+        </div>
+        <div id="videoCommentsList"></div>
+      </div>
     </div>
   </div>
 
@@ -169,9 +184,11 @@
           vids.forEach(vid => {
             const s = SUBJECTS[vid.subject];
             const ytId = getYoutubeId(vid.url);
+            const pinned = isPinned('video', vid.id);
+            const timeEst = estimateTime('video', vid);
             const el = document.createElement('div');
             el.className = 'video-card';
-            el.style.setProperty('--subject-color', s ? s.color : '#666');
+            el.dataset.searchText = (vid.title + ' ' + (vid.description || '') + ' ' + (s ? s.name : '')).toLowerCase();
             el.innerHTML = `
               <div class="video-thumb">
                 ${ytId
@@ -185,16 +202,19 @@
                 </div>
               </div>
               <div class="video-info">
-                <span class="video-subject" style="background:${s ? s.colorLight : 'var(--bg-input)'};color:${s ? s.color : 'var(--text-muted)'}">${s ? s.name : 'Geral'}</span>
+                <span class="video-subject">${s ? s.name : 'Geral'}</span>
                 <h3>${vid.title}</h3>
                 ${vid.description ? `<p>${vid.description}</p>` : ''}
                 <div class="video-meta">
                   <span>${formatDate(vid.created_at)}</span>
                   <span class="meta-dot"></span>
                   <span>${(vid.notes || []).length} anotacao(oes)</span>
+                  <span class="meta-dot"></span>
+                  <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
                 </div>
               </div>
               <div class="video-actions">
+                <button class="pin-btn ${pinned ? 'pinned' : ''}" data-id="${vid.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
                 <button class="btn-icon btn-watch" title="Assistir">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
                 </button>
@@ -211,6 +231,12 @@
                 await renderVideos(activeFilter);
                 await renderFilters();
               }
+            });
+            el.querySelector('.pin-btn').addEventListener('click', (e) => {
+              e.stopPropagation();
+              const nowPinned = togglePin('video', vid.id);
+              el.querySelector('.pin-btn').classList.toggle('pinned', nowPinned);
+              el.querySelector('.pin-btn').textContent = nowPinned ? '\u{1F4CC}' : '\u{1F4CE}';
             });
             list.appendChild(el);
           });
@@ -238,20 +264,41 @@
         });
       }
 
+      async function renderVideoComments(videoId) {
+        const comments = await getComments('video', videoId);
+        const list = document.getElementById('videoCommentsList');
+        list.innerHTML = '';
+        comments.forEach(c => {
+          const el = document.createElement('div');
+          el.className = 'comment-item';
+          el.innerHTML = `
+            <div class="comment-avatar">${(c.user_name || '?')[0].toUpperCase()}</div>
+            <div class="comment-body">
+              <div class="comment-meta"><strong>${c.user_name}</strong> ${formatDate(c.created_at)}</div>
+              <div class="comment-text">${c.text}</div>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+      }
+
       function watchVideo(vid) {
         currentVideoId = vid.id;
         const s = SUBJECTS[vid.subject];
         document.getElementById('watchTitle').textContent = vid.title;
         const sub = document.getElementById('watchSubject');
         sub.textContent = s ? s.name : 'Geral';
-        sub.style.color = s ? s.color : '#666';
+        sub.style.color = '';
         document.getElementById('watchDesc').textContent = vid.description || '';
         const ytId = getYoutubeId(vid.url);
         document.getElementById('watchPlayer').innerHTML = ytId
           ? `<div class="watch-embed"><iframe src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="no-referrer"></iframe></div>`
           : '<p style="color:var(--text-dim);text-align:center;padding:40px;">Link do YouTube invalido</p>';
         renderNotes(vid);
+        renderVideoComments(vid.id);
+        saveProgress('video', vid.id, { title: vid.title, subject: vid.subject });
         document.getElementById('watchOverlay').classList.add('show');
+        if (window.enableFocusMode) window.enableFocusMode();
       }
 
       async function renderNotes(vid) {
@@ -285,7 +332,6 @@
         });
       }
 
-      // Modals
       const overlay = document.getElementById('modalOverlay');
       document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
       document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
@@ -295,16 +341,17 @@
         document.getElementById('watchOverlay').classList.remove('show');
         document.getElementById('watchPlayer').innerHTML = '';
         currentVideoId = null;
+        if (window.disableFocusMode) window.disableFocusMode();
       });
       document.getElementById('watchOverlay').addEventListener('click', e => {
         if (e.target.id === 'watchOverlay') {
           document.getElementById('watchOverlay').classList.remove('show');
           document.getElementById('watchPlayer').innerHTML = '';
           currentVideoId = null;
+          if (window.disableFocusMode) window.disableFocusMode();
         }
       });
 
-      // Add note
       document.getElementById('btnAddNote').addEventListener('click', async () => {
         const text = document.getElementById('noteText').value.trim();
         if (!text || !currentVideoId) return;
@@ -323,7 +370,20 @@
         }
       });
 
-      // Submit form
+      document.getElementById('videoCommentBtn').addEventListener('click', async () => {
+        const input = document.getElementById('videoCommentInput');
+        const text = input.value.trim();
+        if (!text || !currentVideoId) return;
+        const user = getCurrentUser();
+        await addComment('video', currentVideoId, user.id, user.name, text);
+        input.value = '';
+        renderVideoComments(currentVideoId);
+      });
+
+      document.getElementById('videoCommentInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('videoCommentBtn').click();
+      });
+
       document.getElementById('vidForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const url = document.getElementById('vidUrl').value.trim();
@@ -341,6 +401,19 @@
         this.reset();
         await renderVideos(activeFilter);
         await renderFilters();
+      });
+
+      document.querySelector('.topbar') && document.querySelector('.topbar').addEventListener('input', function(e) {
+        if (e.target.id !== 'searchInput') return;
+        const q = e.target.value.toLowerCase().trim();
+        document.querySelectorAll('.video-card').forEach(c => {
+          c.classList.remove('search-highlight', 'search-dimmed');
+          if (q && c.dataset.searchText && c.dataset.searchText.includes(q)) {
+            c.classList.add('search-highlight');
+          } else if (q) {
+            c.classList.add('search-dimmed');
+          }
+        });
       });
 
       await renderVideos(null);

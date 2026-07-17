@@ -59,10 +59,16 @@
         <h1>Quizzes</h1>
         <p>Crie quizzes personalizados e teste seus conhecimentos</p>
       </div>
-      <button class="btn-primary" id="btnCreate">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Criar Quiz
-      </button>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar quizzes..." id="searchInput">
+        </div>
+        <button class="btn-primary" id="btnCreate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Criar Quiz
+        </button>
+      </div>
     </header>
 
     <div class="filters" id="filters"></div>
@@ -147,6 +153,27 @@
 
       let activeFilter = null;
       let questionIndex = 0;
+      let quizKeyboardHandler = null;
+
+      let confirmResolve = null;
+      function showConfirm(text) {
+        return new Promise(resolve => {
+          confirmResolve = resolve;
+          let overlay = document.getElementById('confirmOverlay');
+          if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'confirmOverlay';
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = `<div class="confirm-box"><p>Voce selecionou:</p><div class="confirm-selected" id="confirmText"></div><div class="confirm-actions"><button class="confirm-no" id="confirmNo">Cancelar</button><button class="confirm-yes" id="confirmYes">Confirmar</button></div></div>`;
+            document.body.appendChild(overlay);
+            document.getElementById('confirmYes').addEventListener('click', () => { overlay.classList.remove('show'); confirmResolve(true); });
+            document.getElementById('confirmNo').addEventListener('click', () => { overlay.classList.remove('show'); confirmResolve(false); });
+            overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.classList.remove('show'); confirmResolve(false); } });
+          }
+          document.getElementById('confirmText').textContent = text;
+          overlay.classList.add('show');
+        });
+      }
 
       async function renderQuizzes(filter) {
         activeFilter = filter || null;
@@ -161,9 +188,11 @@
           empty.style.display = 'none';
           quizzes.forEach(q => {
             const s = SUBJECTS[q.subject];
+            const pinned = isPinned('quiz', q.id);
+            const timeEst = estimateTime('quiz', q);
             const el = document.createElement('div');
             el.className = 'quiz-card';
-            el.style.setProperty('--subject-color', s ? s.color : '#666');
+            el.dataset.searchText = (q.title + ' ' + (s ? s.name : '')).toLowerCase();
             el.innerHTML = `
               <div class="quiz-left">
                 <div class="quiz-icon">
@@ -172,13 +201,15 @@
                 <div class="quiz-info">
                   <h3>${q.title}</h3>
                   <div class="quiz-meta">
-                    <span class="quiz-subject-tag" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
+                    <span class="quiz-subject-tag">${s ? s.name : 'Geral'}</span>
                     <span class="quiz-count">${q.questions.length} questoes</span>
                     <span class="quiz-date">${formatDate(q.created_at)}</span>
+                    <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
                   </div>
                 </div>
               </div>
               <div class="quiz-actions">
+                <button class="pin-btn ${pinned ? 'pinned' : ''}" data-id="${q.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
                 <button class="btn-quiz btn-play" title="Iniciar Quiz">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
                   Jogar
@@ -195,6 +226,12 @@
                 await renderQuizzes(activeFilter);
                 await renderFilters();
               }
+            });
+            el.querySelector('.pin-btn').addEventListener('click', (e) => {
+              e.stopPropagation();
+              const nowPinned = togglePin('quiz', q.id);
+              el.querySelector('.pin-btn').classList.toggle('pinned', nowPinned);
+              el.querySelector('.pin-btn').textContent = nowPinned ? '\u{1F4CC}' : '\u{1F4CE}';
             });
             list.appendChild(el);
           });
@@ -243,7 +280,6 @@
             <label>Pergunta</label>
             <div class="textarea-wrapper">
               <textarea class="q-text" rows="2" placeholder="Digite a pergunta..." required></textarea>
-              <button class="emoji-btn" data-emoji-target="q-text-${qNum}" title="Inserir emoji">&#128578;</button>
             </div>
           </div>
           <div class="q-options">
@@ -275,14 +311,12 @@
             <label>Pergunta</label>
             <div class="textarea-wrapper">
               <textarea class="q-text" rows="2" placeholder="Digite a pergunta..." required></textarea>
-              <button class="emoji-btn" data-emoji-target="q-text-${qNum}" title="Inserir emoji">&#128578;</button>
             </div>
           </div>
           <div class="form-group" style="margin-top:12px">
             <label>Resposta correta (modelo)</label>
             <div class="textarea-wrapper">
               <textarea class="q-answer-key" rows="3" placeholder="Digite a resposta esperada para comparacao..." required></textarea>
-              <button class="emoji-btn" data-emoji-target="q-answer-${qNum}" title="Inserir emoji">&#128578;</button>
             </div>
           </div>
           <p class="q-hint">Ao responder, o usuario vera sua resposta ao lado da resposta modelo para comparar.</p>
@@ -298,35 +332,23 @@
       document.getElementById('quizForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const items = document.querySelectorAll('.question-item');
-        if (items.length === 0) {
-          alert('Adicione pelo menos uma questao.');
-          return;
-        }
+        if (items.length === 0) { alert('Adicione pelo menos uma questao.'); return; }
         const questions = [];
         for (const item of items) {
-          const textEl = item.querySelector('.q-text');
-          const text = textEl.value.trim();
+          const text = item.querySelector('.q-text').value.trim();
           if (!text) { alert('Preencha todas as perguntas.'); return; }
-
           if (item.dataset.type === 'written') {
             const answer = item.querySelector('.q-answer-key').value.trim();
-            if (!answer) { alert('Preencha a resposta modelo de todas as questoes escritas.'); return; }
+            if (!answer) { alert('Preencha a resposta modelo.'); return; }
             questions.push({ type: 'written', text, answer });
           } else {
             const opts = item.querySelectorAll('.option-input');
             const correct = item.querySelector('input[type="radio"]:checked');
-            if (opts.length < 4 || !correct) {
-              alert('Preencha todas as alternativas e marque a correta.');
-              return;
-            }
+            if (opts.length < 4 || !correct) { alert('Preencha todas as alternativas e marque a correta.'); return; }
             questions.push({ type: 'mc', text, options: Array.from(opts).map(o => o.value.trim()), correct: parseInt(correct.value) });
           }
         }
-        await addQuiz({
-          title: document.getElementById('quizTitle').value,
-          subject: document.getElementById('quizSubject').value,
-          questions
-        });
+        await addQuiz({ title: document.getElementById('quizTitle').value, subject: document.getElementById('quizSubject').value, questions });
         document.getElementById('createOverlay').classList.remove('show');
         this.reset();
         document.getElementById('questionsList').innerHTML = '';
@@ -341,43 +363,44 @@
         document.getElementById('playTitle').textContent = quiz.title;
         const sub = document.getElementById('playSubject');
         sub.textContent = s ? s.name : 'Geral';
-        sub.style.color = s ? s.color : '#666';
+        sub.style.color = '';
 
         let current = 0;
         let score = 0;
         const answers = [];
+        let selectedIndex = -1;
 
         function renderQuestion() {
           if (current >= quiz.questions.length) { showResult(); return; }
           const q = quiz.questions[current];
           const pct = ((current) / quiz.questions.length * 100).toFixed(0);
+          selectedIndex = -1;
 
           if (q.type === 'written') {
+            const savedDraft = localStorage.getItem('quiz_draft_' + quiz.id + '_' + current) || '';
             document.getElementById('playContent').innerHTML = `
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
               <div class="play-counter">Questao ${current + 1} de ${quiz.questions.length} <span class="q-type-badge badge-written">Escrita</span></div>
               <p class="play-question">${q.text}</p>
-              <textarea id="writtenAnswer" class="written-input" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
+              <textarea id="writtenAnswer" class="written-input" rows="4" placeholder="Digite sua resposta aqui...">${savedDraft}</textarea>
               <button class="btn-submit" id="btnCheckWritten" style="margin-top:12px">Verificar Resposta</button>
               <div id="writtenComparison" style="display:none"></div>
             `;
+            document.getElementById('writtenAnswer').addEventListener('input', function() {
+              localStorage.setItem('quiz_draft_' + quiz.id + '_' + current, this.value);
+            });
             document.getElementById('btnCheckWritten').addEventListener('click', () => {
               const userAnswer = document.getElementById('writtenAnswer').value.trim();
               if (!userAnswer) { alert('Digite uma resposta.'); return; }
+              localStorage.removeItem('quiz_draft_' + quiz.id + '_' + current);
               document.getElementById('btnCheckWritten').style.display = 'none';
               document.getElementById('writtenAnswer').disabled = true;
               const comp = document.getElementById('writtenComparison');
               comp.style.display = 'block';
               comp.innerHTML = `
                 <div class="written-comparison">
-                  <div class="wc-box wc-yours">
-                    <span class="wc-label">Sua resposta</span>
-                    <p>${userAnswer}</p>
-                  </div>
-                  <div class="wc-box wc-model">
-                    <span class="wc-label">Resposta modelo</span>
-                    <p>${q.answer}</p>
-                  </div>
+                  <div class="wc-box wc-yours"><span class="wc-label">Sua resposta</span><p>${userAnswer}</p></div>
+                  <div class="wc-box wc-model"><span class="wc-label">Resposta modelo</span><p>${q.answer}</p></div>
                 </div>
                 <p class="wc-hint">Compare as respostas e avalie se acertou.</p>
                 <div class="wc-eval">
@@ -387,20 +410,20 @@
               `;
               document.getElementById('btnEvalCorrect').addEventListener('click', () => {
                 score++;
-                answers.push({ question: current, isCorrect: true, type: 'written' });
+                answers.push({ question: current, userAnswer, correctAnswer: q.answer, isCorrect: true, type: 'written', text: q.text });
                 setTimeout(() => { current++; renderQuestion(); }, 300);
               });
               document.getElementById('btnEvalWrong').addEventListener('click', () => {
-                answers.push({ question: current, isCorrect: false, type: 'written' });
+                answers.push({ question: current, userAnswer, correctAnswer: q.answer, isCorrect: false, type: 'written', text: q.text });
                 setTimeout(() => { current++; renderQuestion(); }, 300);
               });
             });
           } else {
             document.getElementById('playContent').innerHTML = `
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${quiz.questions.length}</div>
+              <div class="play-counter">Questao ${current + 1} de ${quiz.questions.length} <span style="font-size:11px;color:var(--text-ghost)">(Use setas/teclado ou clique)</span></div>
               <p class="play-question">${q.text}</p>
-              <div class="play-options">
+              <div class="play-options" id="playOptions">
                 ${q.options.map((opt, i) => `
                   <button class="play-option" data-index="${i}">
                     <span class="option-letter">${String.fromCharCode(65 + i)}</span>
@@ -409,33 +432,75 @@
                 `).join('')}
               </div>
             `;
-            document.querySelectorAll('.play-option').forEach(btn => {
-              btn.addEventListener('click', () => {
+            const options = document.querySelectorAll('.play-option');
+            
+            function selectOption(idx) {
+              options.forEach(b => b.classList.remove('selected'));
+              if (idx >= 0 && idx < options.length) {
+                options[idx].classList.add('selected');
+                selectedIndex = idx;
+              }
+            }
+
+            options.forEach(btn => {
+              btn.addEventListener('click', async () => {
                 const idx = parseInt(btn.dataset.index);
-                const isCorrect = idx === q.correct;
-                if (isCorrect) score++;
-                answers.push({ question: current, selected: idx, correct: q.correct, isCorrect, type: 'mc' });
-                document.querySelectorAll('.play-option').forEach(b => {
-                  b.disabled = true;
-                  const bIdx = parseInt(b.dataset.index);
-                  if (bIdx === q.correct) b.classList.add('correct');
-                  else if (bIdx === idx && !isCorrect) b.classList.add('wrong');
-                });
-                setTimeout(() => { current++; renderQuestion(); }, 800);
+                const optionText = q.options[idx];
+                const confirmed = await showConfirm(String.fromCharCode(65 + idx) + ') ' + optionText);
+                if (!confirmed) return;
+                submitAnswer(idx);
               });
             });
+
+            function submitAnswer(idx) {
+              const isCorrect = idx === q.correct;
+              if (isCorrect) score++;
+              answers.push({ question: current, selected: idx, correct: q.correct, isCorrect, type: 'mc', text: q.text, options: q.options });
+              options.forEach(b => {
+                b.disabled = true;
+                const bIdx = parseInt(b.dataset.index);
+                if (bIdx === q.correct) b.classList.add('correct');
+                else if (bIdx === idx && !isCorrect) {
+                  b.classList.add('wrong', 'shake');
+                }
+              });
+              setTimeout(() => { current++; renderQuestion(); }, 800);
+            }
+
+            if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
+            quizKeyboardHandler = function(e) {
+              if (document.querySelector('.confirm-overlay.show')) return;
+              const key = e.key;
+              if (['ArrowDown', 'ArrowRight', 's', 'S'].includes(key)) {
+                e.preventDefault();
+                selectOption(Math.min(selectedIndex + 1, options.length - 1));
+              } else if (['ArrowUp', 'ArrowLeft', 'w', 'W'].includes(key)) {
+                e.preventDefault();
+                selectOption(Math.max(selectedIndex - 1, 0));
+              } else if (['1','2','3','4','a','b','c','d'].includes(key.toLowerCase())) {
+                const map = {a:0,b:1,c:2,d:3,'1':0,'2':1,'3':2,'4':3};
+                selectOption(map[key.toLowerCase()]);
+              } else if (key === 'Enter' && selectedIndex >= 0) {
+                options[selectedIndex].click();
+              }
+            };
+            document.addEventListener('keydown', quizKeyboardHandler);
           }
         }
 
         function showResult() {
+          if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
           const pct = Math.round((score / quiz.questions.length) * 100);
           let msg = pct >= 80 ? 'Excelente!' : pct >= 50 ? 'Bom trabalho!' : 'Continue estudando!';
-          let color = pct >= 80 ? '#00b894' : pct >= 50 ? '#fdcb6e' : '#e17055';
+
+          const user = getCurrentUser();
+          if (user) saveQuizResult(quiz.id, quiz.title, user.id, user.name, score, quiz.questions.length, quiz.subject);
+
+          const wrongAnswers = answers.filter(a => !a.isCorrect);
+
           document.getElementById('playContent').innerHTML = `
             <div class="result">
-              <div class="result-circle" style="border-color:${color}">
-                <span class="result-pct" style="color:${color}">${pct}%</span>
-              </div>
+              <div class="result-circle"><span class="result-pct">${pct}%</span></div>
               <h3 class="result-msg">${msg}</h3>
               <p class="result-detail">${score} de ${quiz.questions.length} acertos</p>
               <div class="result-answers">
@@ -446,6 +511,23 @@
                   </div>
                 `).join('')}
               </div>
+              ${wrongAnswers.length > 0 ? `
+                <div style="text-align:left;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+                  <h3 style="font-size:15px;font-weight:700;color:var(--text-secondary);margin-bottom:12px">Revisao dos Erros</h3>
+                  ${wrongAnswers.map(a => `
+                    <div class="review-item was-wrong">
+                      <div class="review-question">${a.text}</div>
+                      ${a.type === 'mc' ? `
+                        <div class="review-your-answer">Sua resposta: ${String.fromCharCode(65 + a.selected)}) ${a.options[a.selected]}</div>
+                        <div class="review-correct-answer">Resposta correta: ${String.fromCharCode(65 + a.correct)}) ${a.options[a.correct]}</div>
+                      ` : `
+                        <div class="review-your-answer">Sua resposta: ${a.userAnswer || '(vazio)'}</div>
+                        <div class="review-correct-answer">Resposta modelo: ${a.correctAnswer}</div>
+                      `}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : '<p style="color:#00b894;margin-top:12px;font-weight:600">Parabens! Todas as respostas estao corretas!</p>'}
               <button class="btn-submit result-btn" onclick="document.getElementById('playOverlay').classList.remove('show')">Fechar</button>
             </div>
           `;
@@ -457,9 +539,24 @@
 
       document.getElementById('btnCreate').addEventListener('click', () => document.getElementById('createOverlay').classList.add('show'));
       document.getElementById('createClose').addEventListener('click', () => document.getElementById('createOverlay').classList.remove('show'));
-      document.getElementById('playClose').addEventListener('click', () => document.getElementById('playOverlay').classList.remove('show'));
+      document.getElementById('playClose').addEventListener('click', () => {
+        document.getElementById('playOverlay').classList.remove('show');
+        if (quizKeyboardHandler) { document.removeEventListener('keydown', quizKeyboardHandler); quizKeyboardHandler = null; }
+      });
       document.getElementById('createOverlay').addEventListener('click', e => { if (e.target.id === 'createOverlay') e.target.classList.remove('show'); });
-      document.getElementById('playOverlay').addEventListener('click', e => { if (e.target.id === 'playOverlay') e.target.classList.remove('show'); });
+      document.getElementById('playOverlay').addEventListener('click', e => { if (e.target.id === 'playOverlay') { e.target.classList.remove('show'); if (quizKeyboardHandler) { document.removeEventListener('keydown', quizKeyboardHandler); quizKeyboardHandler = null; } } });
+
+      const searchInput = document.querySelector('.topbar input[type="text"], #searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          const q = this.value.toLowerCase().trim();
+          document.querySelectorAll('.quiz-card').forEach(c => {
+            c.classList.remove('search-highlight', 'search-dimmed');
+            if (q && c.dataset.searchText && c.dataset.searchText.includes(q)) c.classList.add('search-highlight');
+            else if (q) c.classList.add('search-dimmed');
+          });
+        });
+      }
 
       await renderQuizzes(null);
       await renderFilters();
