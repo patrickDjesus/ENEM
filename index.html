@@ -60,13 +60,58 @@
         <a href="#" class="forgot">Esqueceu a senha?</a>
       </div>
 
+      <div class="login-error" id="loginError" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <span id="loginErrorText">E-mail ou senha invalidos</span>
+      </div>
+
       <button type="submit" class="btn-login">
         <span>Entrar</span>
       </button>
     </form>
 
-
+    <div class="login-footer">
+      <p>Credenciais padrao: <strong>admin@enem.com</strong> / <strong>admin123</strong></p>
+    </div>
   </div>
+
+  <script src="database.js"></script>
+  <script>
+    (function() {
+      const user = getCurrentUser();
+      if (user) {
+        window.location.href = 'home.html';
+        return;
+      }
+
+      const form = document.getElementById('loginForm');
+      const errorEl = document.getElementById('loginError');
+      const errorText = document.getElementById('loginErrorText');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          errorText.textContent = 'Preencha todos os campos';
+          errorEl.style.display = 'flex';
+          return;
+        }
+
+        const user = authenticateUser(email, password);
+        if (user) {
+          setCurrentUser(user);
+          window.location.href = 'home.html';
+        } else {
+          errorText.textContent = 'E-mail ou senha invalidos';
+          errorEl.style.display = 'flex';
+          document.getElementById('password').value = '';
+          document.getElementById('password').focus();
+        }
+      });
+    })();
+  </script>
 
 </body>
 </html>

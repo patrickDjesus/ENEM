@@ -69,7 +69,9 @@
 
     <div id="videoList" class="video-list"></div>
     <div id="emptyState" class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <div class="empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </div>
       <p>Nenhum video adicionado.</p>
       <p>Clique em "Adicionar Video" para colar um link do YouTube.</p>
     </div>
@@ -174,15 +176,18 @@
                 : `<div class="thumb-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>`
               }
               <div class="play-overlay">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                <div class="play-btn">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
               </div>
             </div>
             <div class="video-info">
-              <span class="video-subject" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
+              <span class="video-subject" style="background:${s ? s.colorLight : 'var(--bg-input)'};color:${s ? s.color : 'var(--text-muted)'}">${s ? s.name : 'Geral'}</span>
               <h3>${vid.title}</h3>
               ${vid.description ? `<p>${vid.description}</p>` : ''}
               <div class="video-meta">
                 <span>${formatDate(vid.createdAt)}</span>
+                <span class="meta-dot"></span>
                 <span>${(vid.notes || []).length} anotacao(oes)</span>
               </div>
             </div>
@@ -240,17 +245,7 @@
       document.getElementById('watchDesc').textContent = vid.description || '';
       const ytId = getYoutubeId(vid.url);
       document.getElementById('watchPlayer').innerHTML = ytId
-        ? `<div class="watch-link-area">
-            <img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" alt="" class="watch-thumb">
-            <a href="https://www.youtube.com/watch?v=${ytId}" target="_blank" rel="noopener noreferrer" class="btn-open-yt">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>
-              Assistir no YouTube
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-            <a href="https://www.youtube.com/watch?v=${ytId}" target="_blank" rel="noopener noreferrer" class="btn-open-yt-secondary">
-              Abrir em nova aba
-            </a>
-          </div>`
+        ? `<div class="watch-embed"><iframe src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="no-referrer"></iframe></div>`
         : '<p style="color:var(--text-dim);text-align:center;padding:40px;">Link do YouTube invalido</p>';
       renderNotes(vid);
       document.getElementById('watchOverlay').classList.add('show');

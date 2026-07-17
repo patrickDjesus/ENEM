@@ -99,3 +99,91 @@ function formatDate(iso) {
   if (diff < 172800000) return 'ontem';
   return d.toLocaleDateString('pt-BR');
 }
+
+// ==================== USERS ====================
+const DEFAULT_ADMIN = {
+  id: 1,
+  name: 'Administrador',
+  email: 'admin@enem.com',
+  password: 'admin123',
+  role: 'admin',
+  createdAt: '2025-01-01T00:00:00.000Z'
+};
+
+function initUsers() {
+  const users = getDB('users');
+  if (users.length === 0) {
+    setDB('users', [{ ...DEFAULT_ADMIN }]);
+  }
+}
+
+function getUsers() {
+  initUsers();
+  return getDB('users');
+}
+
+function addUser(user) {
+  initUsers();
+  const users = getDB('users');
+  if (users.find(u => u.email === user.email)) return false;
+  user.id = Date.now();
+  user.createdAt = new Date().toISOString();
+  if (!user.role) user.role = 'user';
+  users.unshift(user);
+  setDB('users', users);
+  return true;
+}
+
+function updateUser(id, data) {
+  const users = getDB('users');
+  const idx = users.findIndex(u => u.id === id);
+  if (idx === -1) return false;
+  if (data.email && data.email !== users[idx].email) {
+    if (users.find(u => u.email === data.email && u.id !== id)) return false;
+  }
+  Object.assign(users[idx], data);
+  setDB('users', users);
+  return true;
+}
+
+function removeUser(id) {
+  if (id === 1) return false;
+  setDB('users', getDB('users').filter(u => u.id !== id));
+  return true;
+}
+
+function authenticateUser(email, password) {
+  initUsers();
+  const users = getDB('users');
+  return users.find(u => u.email === email && u.password === password) || null;
+}
+
+function getCurrentUser() {
+  try {
+    const data = sessionStorage.getItem('enem_currentUser');
+    return data ? JSON.parse(data) : null;
+  } catch { return null; }
+}
+
+function setCurrentUser(user) {
+  sessionStorage.setItem('enem_currentUser', JSON.stringify(user));
+}
+
+function logout() {
+  sessionStorage.removeItem('enem_currentUser');
+  window.location.href = 'index.html';
+}
+
+function requireAuth() {
+  const user = getCurrentUser();
+  if (!user) {
+    window.location.href = 'index.html';
+    return null;
+  }
+  return user;
+}
+
+function isAdmin() {
+  const user = getCurrentUser();
+  return user && user.role === 'admin';
+}

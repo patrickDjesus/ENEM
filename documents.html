@@ -75,7 +75,7 @@
     </div>
   </main>
 
-  <!-- MODAL -->
+  <!-- MODAL ADICIONAR -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header">
@@ -115,25 +115,23 @@
     </div>
   </div>
 
-  <!-- MODAL VISUALIZAR -->
-  <div class="modal-overlay" id="viewOverlay">
-    <div class="modal modal-view">
-      <div class="modal-header">
-        <div>
-          <h2 id="viewTitle"></h2>
-          <div class="view-subject" id="viewSubject"></div>
-        </div>
-        <div class="view-actions">
-          <button class="btn-view-external" id="btnOpenExternal" title="Abrir em nova aba">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Abrir PDF
-          </button>
-          <button class="modal-close" id="viewClose">&times;</button>
-        </div>
+  <!-- PDF VIEWER INLINE -->
+  <div id="pdfViewer" class="pdf-viewer">
+    <div class="pdf-toolbar">
+      <button class="btn-back" id="pdfBack">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+        Voltar
+      </button>
+      <div class="pdf-info">
+        <h3 id="pdfTitle"></h3>
+        <span id="pdfSubject"></span>
       </div>
-      <p class="view-desc" id="viewDesc"></p>
-      <iframe id="viewPdf" class="view-pdf"></iframe>
+      <button class="btn-external" id="btnOpenExternal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Abrir em nova aba
+      </button>
     </div>
+    <iframe id="pdfFrame" class="pdf-frame"></iframe>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
@@ -237,36 +235,33 @@
 
     function viewDoc(doc) {
       const s = SUBJECTS[doc.subject];
-      document.getElementById('viewTitle').textContent = doc.title;
-      document.getElementById('viewSubject').textContent = s ? s.name : 'Geral';
-      document.getElementById('viewSubject').style.color = s ? s.color : '#666';
-      document.getElementById('viewDesc').textContent = doc.description || '';
-      const pdfUrl = doc.fileUrl || doc.fileData || '';
-      const pdf = document.getElementById('viewPdf');
-      pdf.src = pdfUrl;
-      document.getElementById('viewOverlay').classList.add('show');
+      document.getElementById('pdfTitle').textContent = doc.title;
+      const sub = document.getElementById('pdfSubject');
+      sub.textContent = s ? s.name : 'Geral';
+      sub.style.color = s ? s.color : '#666';
+      document.getElementById('pdfFrame').src = doc.fileUrl || doc.fileData || '';
+      document.querySelector('.main').classList.add('hidden');
+      document.getElementById('pdfViewer').classList.add('active');
     }
 
-    // Modals
+    // PDF Viewer close
+    document.getElementById('pdfBack').addEventListener('click', closePdfViewer);
+    function closePdfViewer() {
+      document.getElementById('pdfViewer').classList.remove('active');
+      document.querySelector('.main').classList.remove('hidden');
+      document.getElementById('pdfFrame').src = '';
+    }
+
+    document.getElementById('btnOpenExternal').addEventListener('click', () => {
+      const src = document.getElementById('pdfFrame').src;
+      if (src) window.open(src, '_blank');
+    });
+
+    // Add modal
     const overlay = document.getElementById('modalOverlay');
     document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
     document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
-    document.getElementById('viewClose').addEventListener('click', () => {
-      document.getElementById('viewOverlay').classList.remove('show');
-      document.getElementById('viewPdf').src = '';
-    });
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
-    document.getElementById('viewOverlay').addEventListener('click', e => {
-      if (e.target.id === 'viewOverlay') {
-        document.getElementById('viewOverlay').classList.remove('show');
-        document.getElementById('viewPdf').src = '';
-      }
-    });
-
-    document.getElementById('btnOpenExternal').addEventListener('click', () => {
-      const pdf = document.getElementById('viewPdf');
-      if (pdf.src) window.open(pdf.src, '_blank');
-    });
 
     // File input
     const fileInput = document.getElementById('docFile');

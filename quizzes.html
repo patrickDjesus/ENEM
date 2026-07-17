@@ -443,7 +443,7 @@
               ${answers.map((a, i) => `
                 <div class="result-answer ${a.isCorrect ? 'correct' : 'wrong'}">
                   <span class="ra-num">${i + 1}</span>
-                  <span class="ra-icon">${a.isCorrect ? '✓' : '✗'}</span>
+                  <span class="ra-icon">${a.isCorrect ? '\u2713' : '\u2717'}</span>
                 </div>
               `).join('')}
             </div>
