@@ -51,6 +51,10 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Voltar
         </button>
+        <div class="watch-session-timer" id="sessionTimer" title="Tempo nesta sessao">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+          <span id="sessionTimerText">00:00</span>
+        </div>
         <button class="btn-fullscreen" id="btnFullscreen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
           Tela Cheia
@@ -87,19 +91,62 @@
           <div class="note-input">
             <div class="note-editor-wrapper">
               <div class="note-toolbar" id="noteToolbar">
-                <button class="note-toolbar-btn" data-command="bold" title="Negrito (Ctrl+B)"><strong>B</strong></button>
-                <button class="note-toolbar-btn" data-command="italic" title="Italico (Ctrl+I)"><em>I</em></button>
-                <button class="note-toolbar-btn" data-command="heading" title="Titulo">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/></svg>
-                </button>
-                <button class="note-toolbar-btn" data-command="insertUnorderedList" title="Lista">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                </button>
+                <div class="note-toolbar-group">
+                  <button class="note-toolbar-btn" data-command="bold" title="Negrito (Ctrl+B)"><strong>B</strong></button>
+                  <button class="note-toolbar-btn" data-command="italic" title="Italico (Ctrl+I)"><em>I</em></button>
+                  <button class="note-toolbar-btn" data-command="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
+                </div>
+                <div class="note-toolbar-sep"></div>
+                <div class="note-toolbar-group">
+                  <button class="note-toolbar-btn" data-command="h1" title="Titulo Grande">H1</button>
+                  <button class="note-toolbar-btn" data-command="h2" title="Titulo Medio">H2</button>
+                  <button class="note-toolbar-btn" data-command="h3" title="Titulo Pequeno">H3</button>
+                  <button class="note-toolbar-btn" data-command="p" title="Texto normal">P</button>
+                </div>
+                <div class="note-toolbar-sep"></div>
+                <div class="note-toolbar-group">
+                  <button class="note-toolbar-btn" data-command="justifyLeft" title="Alinhar esquerda">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                  </button>
+                  <button class="note-toolbar-btn" data-command="justifyCenter" title="Centralizar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+                  </button>
+                  <button class="note-toolbar-btn" data-command="justifyRight" title="Alinhar direita">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+                  </button>
+                  <button class="note-toolbar-btn" data-command="justifyFull" title="Justificar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+                  </button>
+                </div>
+                <div class="note-toolbar-sep"></div>
+                <div class="note-toolbar-group">
+                  <button class="note-toolbar-btn" data-command="insertUnorderedList" title="Lista">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                  </button>
+                  <button class="note-toolbar-btn" data-command="insertOrderedList" title="Lista numerada">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="2" y="8" font-size="7" fill="currentColor" stroke="none" font-weight="700">1</text><text x="2" y="14" font-size="7" fill="currentColor" stroke="none" font-weight="700">2</text><text x="2" y="20" font-size="7" fill="currentColor" stroke="none" font-weight="700">3</text></svg>
+                  </button>
+                </div>
+                <div class="note-toolbar-sep"></div>
+                <div class="note-toolbar-group">
+                  <div class="note-color-wrapper">
+                    <button class="note-toolbar-btn note-color-btn" data-command="foreColor" title="Cor do texto">
+                      <span class="color-icon">A</span>
+                    </button>
+                    <input type="color" class="note-color-input" id="textColorPicker" value="#000000">
+                  </div>
+                  <div class="note-color-wrapper">
+                    <button class="note-toolbar-btn note-color-btn" data-command="hiliteColor" title="Marca-texto">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                    <input type="color" class="note-color-input" id="highlightColorPicker" value="#ffff00">
+                  </div>
+                </div>
               </div>
               <div class="note-editor" contenteditable="true" id="noteText" data-placeholder="Escreva uma anotacao..."></div>
               <button class="emoji-btn" data-emoji-target="noteText" title="Inserir emoji">&#128578;</button>
             </div>
-            <button class="btn-note" id="btnAddNote">
+            <button class="btn-note" id="btnAddNote" title="Salvar anotacao">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
           </div>
@@ -166,6 +213,106 @@
       let ytPlayer = null;
       let ytReady = false;
 
+      // Session timer
+      let sessionTimerInterval = null;
+      let sessionSeconds = 0;
+
+      function startSessionTimer() {
+        stopSessionTimer();
+        sessionSeconds = 0;
+        updateSessionDisplay();
+        sessionTimerInterval = setInterval(() => {
+          sessionSeconds++;
+          updateSessionDisplay();
+        }, 1000);
+      }
+
+      function stopSessionTimer() {
+        if (sessionTimerInterval) {
+          clearInterval(sessionTimerInterval);
+          sessionTimerInterval = null;
+        }
+        return sessionSeconds;
+      }
+
+      function updateSessionDisplay() {
+        const el = document.getElementById('sessionTimerText');
+        if (!el) return;
+        const m = Math.floor(sessionSeconds / 60);
+        const s = sessionSeconds % 60;
+        el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      }
+
+      // --- Video watch time: Supabase + localStorage cache (per-user) ---
+      const _userVideoTimeCache = {}; // in-memory cache, synced to localStorage
+      let _debounceTimer = null;
+      let _pendingFlush = false;
+
+      function _videoTimeLSKey() {
+        const user = getCurrentUser();
+        return 'enem_video_time_' + (user ? user.id : 'anon');
+      }
+
+      async function loadVideoTimesFromDB() {
+        const user = getCurrentUser();
+        if (!user) return;
+        // Try Supabase first
+        const dbTimes = await getAllVideoTimesFromDB(user.id);
+        if (Object.keys(dbTimes).length > 0) {
+          Object.assign(_userVideoTimeCache, dbTimes);
+          localStorage.setItem(_videoTimeLSKey(), JSON.stringify(_userVideoTimeCache));
+        } else {
+          // Fallback: load from localStorage
+          try {
+            const cached = JSON.parse(localStorage.getItem(_videoTimeLSKey()) || '{}');
+            Object.assign(_userVideoTimeCache, cached);
+          } catch { /* empty */ }
+        }
+      }
+
+      function getVideoTimeSpent() {
+        return { ..._userVideoTimeCache };
+      }
+
+      function saveVideoTimeSpent(videoId, seconds) {
+        if (!videoId || seconds <= 0) return;
+        _userVideoTimeCache[videoId] = (_userVideoTimeCache[videoId] || 0) + seconds;
+        localStorage.setItem(_videoTimeLSKey(), JSON.stringify(_userVideoTimeCache));
+        _scheduleSupabaseFlush();
+      }
+
+      function _scheduleSupabaseFlush() {
+        if (_debounceTimer) return; // already scheduled
+        _pendingFlush = true;
+        _debounceTimer = setTimeout(() => {
+          _debounceTimer = null;
+          _flushToSupabase();
+        }, 30000); // 30s debounce
+      }
+
+      async function _flushToSupabase() {
+        const user = getCurrentUser();
+        if (!user) return;
+        const keys = Object.keys(_userVideoTimeCache);
+        for (const vidId of keys) {
+          await saveVideoTimeToDB(user.id, vidId, _userVideoTimeCache[vidId]);
+        }
+      }
+
+      async function _flushToSupabaseNow() {
+        if (_debounceTimer) { clearTimeout(_debounceTimer); _debounceTimer = null; }
+        await _flushToSupabase();
+      }
+
+      function formatTimeSpent(totalSec) {
+        if (!totalSec) return null;
+        if (totalSec < 60) return totalSec + 's';
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        if (h > 0) return h + 'h' + m + 'min';
+        return m + 'min';
+      }
+
       // Load YouTube IFrame API
       const tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
@@ -186,7 +333,14 @@
       const listView = document.getElementById('listView');
       const watchView = document.getElementById('watchView');
 
-      function showListView() {
+      async function showListView() {
+        if (currentVideoId) {
+          const elapsed = stopSessionTimer();
+          if (elapsed > 0) saveVideoTimeSpent(currentVideoId, elapsed);
+          await _flushToSupabaseNow();
+        } else {
+          stopSessionTimer();
+        }
         listView.classList.remove('hidden');
         watchView.classList.add('hidden');
         document.querySelector('.sidebar').style.display = '';
@@ -208,6 +362,7 @@
         const vids = allVids.filter(v => !activeFilter || v.subject === activeFilter);
         const list = document.getElementById('videoList');
         const empty = document.getElementById('emptyState');
+        const timeSpent = getVideoTimeSpent();
         list.innerHTML = '';
         if (vids.length === 0) {
           empty.style.display = 'flex';
@@ -244,6 +399,7 @@
                   <span>${(vid.notes || []).length} anotacao(oes)</span>
                   <span class="meta-dot"></span>
                   <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
+                  ${timeSpent[vid.id] ? `<span class="meta-dot"></span><span class="time-spent-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>${formatTimeSpent(timeSpent[vid.id])} assistido</span>` : ''}
                 </div>
               </div>
               <div class="video-actions">
@@ -361,6 +517,7 @@
         renderVideoComments(vid.id);
         saveProgress('video', vid.id, { title: vid.title, subject: vid.subject });
         showWatchView();
+        startSessionTimer();
       }
 
       async function renderNotes(vid) {
@@ -417,7 +574,7 @@
       }
 
       function sanitizeNoteHtml(html) {
-        return html.replace(/<\/?script|<\/?iframe|<\/?object|<\/?embed|<\/?form|on\w+\s*=/gi, '<!-- stripped -->');
+        return html.replace(/<\/?script|<\/?iframe|<\/?object|<\/?embed|<\/?form/gi, '<!-- stripped -->');
       }
 
       function stripHtml(html) {
@@ -430,26 +587,52 @@
       function updateToolbarState() {
         document.querySelectorAll('.note-toolbar-btn').forEach(btn => {
           const cmd = btn.dataset.command;
-          if (cmd === 'bold') {
-            btn.classList.toggle('active', document.queryCommandState('bold'));
-          } else if (cmd === 'italic') {
-            btn.classList.toggle('active', document.queryCommandState('italic'));
-          }
+          if (cmd === 'bold') btn.classList.toggle('active', document.queryCommandState('bold'));
+          else if (cmd === 'italic') btn.classList.toggle('active', document.queryCommandState('italic'));
+          else if (cmd === 'underline') btn.classList.toggle('active', document.queryCommandState('underline'));
+          else if (cmd === 'insertUnorderedList') btn.classList.toggle('active', document.queryCommandState('insertUnorderedList'));
+          else if (cmd === 'insertOrderedList') btn.classList.toggle('active', document.queryCommandState('insertOrderedList'));
+          else if (cmd === 'justifyLeft') btn.classList.toggle('active', document.queryCommandValue('justifyContent') === 'start' || document.queryCommandValue('justifyAlignment') === 'left');
+          else if (cmd === 'justifyCenter') btn.classList.toggle('active', document.queryCommandValue('justifyContent') === 'center');
+          else if (cmd === 'justifyRight') btn.classList.toggle('active', document.queryCommandValue('justifyContent') === 'end' || document.queryCommandValue('justifyAlignment') === 'right');
+          else if (cmd === 'justifyFull') btn.classList.toggle('active', document.queryCommandValue('justifyContent') === 'justify');
         });
       }
 
-      document.querySelectorAll('.note-toolbar-btn').forEach(btn => {
+      document.querySelectorAll('.note-toolbar-btn[data-command]').forEach(btn => {
         btn.addEventListener('mousedown', e => e.preventDefault());
         btn.addEventListener('click', () => {
           const cmd = btn.dataset.command;
-          if (cmd === 'heading') {
-            document.execCommand('formatBlock', false, 'h4');
+          document.getElementById('noteText').focus();
+          if (cmd === 'h1') {
+            document.execCommand('formatBlock', false, 'h1');
+          } else if (cmd === 'h2') {
+            document.execCommand('formatBlock', false, 'h2');
+          } else if (cmd === 'h3') {
+            document.execCommand('formatBlock', false, 'h3');
+          } else if (cmd === 'p') {
+            document.execCommand('formatBlock', false, 'p');
+          } else if (cmd === 'foreColor') {
+            const color = document.getElementById('textColorPicker').value;
+            document.execCommand('foreColor', false, color);
+          } else if (cmd === 'hiliteColor') {
+            const color = document.getElementById('highlightColorPicker').value;
+            document.execCommand('hiliteColor', false, color);
           } else {
             document.execCommand(cmd, false, null);
           }
-          document.getElementById('noteText').focus();
           updateToolbarState();
         });
+      });
+
+      document.getElementById('textColorPicker').addEventListener('input', e => {
+        document.getElementById('noteText').focus();
+        document.execCommand('foreColor', false, e.target.value);
+      });
+
+      document.getElementById('highlightColorPicker').addEventListener('input', e => {
+        document.getElementById('noteText').focus();
+        document.execCommand('hiliteColor', false, e.target.value);
       });
 
       document.getElementById('noteText').addEventListener('keyup', updateToolbarState);
@@ -484,13 +667,6 @@
         await renderVideos(activeFilter);
         recordActivity();
         showToast('Anotacao salva!' + (time !== null ? ' (' + formatTimestamp(time) + ')' : ''), 'success');
-      });
-
-      document.getElementById('noteText').addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          document.getElementById('btnAddNote').click();
-        }
       });
 
       document.getElementById('videoCommentBtn').addEventListener('click', async () => {
@@ -566,6 +742,26 @@
         });
       });
 
+      // Save time on tab close
+      window.addEventListener('beforeunload', () => {
+        if (currentVideoId) {
+          const elapsed = stopSessionTimer();
+          if (elapsed > 0) saveVideoTimeSpent(currentVideoId, elapsed);
+        }
+        // Force sync to Supabase synchronously via sendBeacon fallback
+        const user = getCurrentUser();
+        if (user && Object.keys(_userVideoTimeCache).length > 0) {
+          // Try to cancel debounce and flush
+          if (_debounceTimer) { clearTimeout(_debounceTimer); _debounceTimer = null; }
+          const keys = Object.keys(_userVideoTimeCache);
+          for (const vidId of keys) {
+            // Best-effort: fire-and-forget (page is closing)
+            saveVideoTimeToDB(user.id, vidId, _userVideoTimeCache[vidId]);
+          }
+        }
+      });
+
+      await loadVideoTimesFromDB();
       await renderVideos(null);
       await renderFilters();
     })();

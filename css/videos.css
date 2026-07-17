@@ -542,6 +542,42 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 12px;
+}
+
+/* Session timer */
+.watch-session-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.watch-session-timer svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Time spent badge on cards */
+.time-spent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.time-spent-badge svg {
+  width: 12px;
+  height: 12px;
 }
 
 .watch-layout {
@@ -788,28 +824,46 @@ body {
 
 .note-toolbar {
   display: flex;
+  align-items: center;
   gap: 2px;
-  padding: 6px 8px;
+  padding: 4px 6px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-bottom: none;
   border-radius: 10px 10px 0 0;
+  flex-wrap: wrap;
+}
+
+.note-toolbar-group {
+  display: flex;
+  gap: 1px;
+}
+
+.note-toolbar-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
 .note-toolbar-btn {
-  width: 30px;
-  height: 28px;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 5px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: 5px;
   color: var(--text-dim);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   font-family: 'Inter', sans-serif;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .note-toolbar-btn:hover {
@@ -820,14 +874,54 @@ body {
 .note-toolbar-btn.active {
   background: var(--accent-bg);
   color: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 6px var(--accent-glow);
 }
 
+/* Color picker */
+.note-color-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.note-color-btn {
+  padding: 0 4px;
+}
+
+.color-icon {
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
+  position: relative;
+}
+
+.color-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 1px;
+  right: 1px;
+  height: 3px;
+  background: var(--text-color-swatch, #000);
+  border-radius: 1px;
+}
+
+.note-color-input {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ==================== EDITOR ==================== */
 .note-editor {
-  min-height: 60px;
-  max-height: 200px;
+  min-height: 80px;
+  max-height: 300px;
   overflow-y: auto;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: var(--bg-input);
   border: 1px solid var(--border-input);
   border-top: none;
@@ -835,7 +929,7 @@ body {
   color: var(--text-primary);
   font-size: 13px;
   font-family: 'Inter', sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   outline: none;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   word-wrap: break-word;
@@ -853,18 +947,33 @@ body {
   pointer-events: none;
 }
 
-.note-editor h4 {
-  font-size: 15px;
+/* Editor headings */
+.note-editor h1 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 8px 0 4px;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.note-editor h2 {
+  font-size: 17px;
   font-weight: 700;
   margin: 6px 0 4px;
   color: var(--text-primary);
+  line-height: 1.35;
 }
 
-.note-editor h5 {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 6px 0 4px;
+.note-editor h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 6px 0 3px;
   color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.note-editor p {
+  margin: 2px 0;
 }
 
 .note-editor strong {
@@ -876,15 +985,28 @@ body {
   font-style: italic;
 }
 
+.note-editor u {
+  text-decoration-color: var(--accent);
+  text-underline-offset: 2px;
+}
+
 .note-editor ul, .note-editor ol {
   margin: 4px 0;
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
 .note-editor li {
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-bottom: 2px;
+}
+
+.note-editor mark {
+  background: #ffeaa7;
+  color: inherit;
+  padding: 1px 3px;
+  border-radius: 2px;
 }
 
 .note-editor-wrapper .emoji-btn {
@@ -893,25 +1015,39 @@ body {
   right: 8px;
 }
 
-/* Rendered note text with formatting */
+/* ==================== RENDERED NOTE TEXT ==================== */
 .note-text {
   font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-.note-text h4 {
+.note-text h1 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 6px 0 4px;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.note-text h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 5px 0 3px;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.note-text h3 {
   font-size: 15px;
   font-weight: 700;
-  margin: 4px 0;
+  margin: 4px 0 3px;
   color: var(--text-primary);
+  line-height: 1.4;
 }
 
-.note-text h5 {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 4px 0;
-  color: var(--text-primary);
+.note-text p {
+  margin: 2px 0;
 }
 
 .note-text strong {
@@ -923,16 +1059,34 @@ body {
   font-style: italic;
 }
 
+.note-text u {
+  text-decoration-color: var(--accent);
+  text-underline-offset: 2px;
+}
+
 .note-text ul, .note-text ol {
   margin: 4px 0;
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
 .note-text li {
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-bottom: 2px;
 }
+
+.note-text mark {
+  background: #ffeaa7;
+  color: inherit;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
+.note-text [style*="text-align: left"] { text-align: left; }
+.note-text [style*="text-align: center"] { text-align: center; }
+.note-text [style*="text-align: right"] { text-align: right; }
+.note-text [style*="text-align: justify"] { text-align: justify; }
 
 .note-date {
   font-size: 11px;

@@ -540,6 +540,49 @@ async function getWeeklyRanking() {
     .sort((a, b) => b.avg_pct - a.avg_pct);
 }
 
+/* ==================== VIDEO WATCH TIME (SUPABASE) ==================== */
+async function getVideoTimeFromDB(userId, videoId) {
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('video_watch_time')
+        .select('time_seconds')
+        .eq('user_id', userId)
+        .eq('video_id', videoId)
+        .maybeSingle();
+      if (!error && data) return data.time_seconds || 0;
+    } catch(e) { console.warn('getVideoTimeFromDB failed:', e); }
+  }
+  return 0;
+}
+
+async function getAllVideoTimesFromDB(userId) {
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('video_watch_time')
+        .select('video_id, time_seconds')
+        .eq('user_id', userId);
+      if (!error && data) {
+        const map = {};
+        data.forEach(r => { map[r.video_id] = r.time_seconds || 0; });
+        return map;
+      }
+    } catch(e) { console.warn('getAllVideoTimesFromDB failed:', e); }
+  }
+  return {};
+}
+
+async function saveVideoTimeToDB(userId, videoId, seconds) {
+  if (sb) {
+    try {
+      const { error } = await sb.from('video_watch_time').upsert(
+        { user_id: userId, video_id: videoId, time_seconds: seconds, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id,video_id' }
+      );
+      if (error) console.warn('saveVideoTimeToDB error:', error);
+    } catch(e) { console.warn('saveVideoTimeToDB failed:', e); }
+  }
+}
+
 /* ==================== SHUFFLE UTIL ==================== */
 function shuffleArray(arr) {
   const a = arr.slice();
