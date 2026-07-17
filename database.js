@@ -256,14 +256,14 @@ async function getVideos() {
 async function addVideo(video) {
   video.id = video.id || Date.now();
   video.created_at = video.created_at || new Date().toISOString();
+  video.notes = video.notes || [];
+  const user = getCurrentUser();
+  if (!video.user_id && user) video.user_id = user.id;
 
   if (sb) {
     try {
-      const insertData = { ...video };
-      delete insertData.notes;
-      const { error } = await sb.from('videos').insert(insertData);
+      const { error } = await sb.from('videos').insert(video);
       if (error) throw error;
-      video.notes = video.notes || [];
       const vids = getLS('videos');
       vids.unshift(video);
       setLS('videos', vids);
@@ -271,7 +271,6 @@ async function addVideo(video) {
     } catch(e) { console.warn('Supabase addVideo failed, using localStorage:', e); }
   }
 
-  video.notes = video.notes || [];
   const vids = getLS('videos');
   vids.unshift(video);
   setLS('videos', vids);

@@ -337,6 +337,14 @@ body {
   color: #fff;
 }
 
+/* ==================== TOPBAR RIGHT ==================== */
+.topbar-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 /* ==================== SEARCH BAR ==================== */
 .search {
   display: flex;
