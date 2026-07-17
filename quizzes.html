@@ -19,7 +19,7 @@
         <h1>Quizzes</h1>
         <p>Crie quizzes personalizados e teste seus conhecimentos</p>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
+      <div class="topbar-right">
         <div class="search">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" placeholder="Buscar quizzes..." id="searchInput">
@@ -107,7 +107,6 @@
       const root = document.getElementById('sidebarRoot');
       root.insertAdjacentHTML('afterbegin', renderSidebar('quizzes'));
       initSidebar();
-      initThemeToggle();
       initEmojiPickers();
       const select = document.getElementById('quizSubject');
       Object.keys(SUBJECTS).forEach(k => {

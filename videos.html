@@ -137,7 +137,6 @@
       const root = document.getElementById('sidebarRoot');
       root.insertAdjacentHTML('afterbegin', renderSidebar('videos'));
       initSidebar();
-      initThemeToggle();
       initEmojiPickers();
 
       const select = document.getElementById('vidSubject');
@@ -161,7 +160,7 @@
         document.querySelector('.main').style.marginLeft = '';
         document.getElementById('watchPlayer').innerHTML = '';
         currentVideoId = null;
-        window.disableFocusMode();
+        if (window.disableFocusMode) window.disableFocusMode();
       }
 
       function showWatchView() {

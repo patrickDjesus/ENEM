@@ -23,7 +23,7 @@ body {
   transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
-.sidebar.collapsed ~ .main {
+#sidebarRoot:has(.sidebar.collapsed) ~ .main {
   margin-left: var(--sidebar-collapsed-width);
 }
 
@@ -812,7 +812,7 @@ body {
     padding: 24px 16px;
   }
 
-  .sidebar.collapsed ~ .main {
+  #sidebarRoot:has(.sidebar.collapsed) ~ .main {
     margin-left: 0;
   }
 

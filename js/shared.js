@@ -1,20 +1,36 @@
 /* ==================== THEME ==================== */
 (function() {
   const saved = localStorage.getItem('enem_theme');
-  if (saved === 'light' || saved === 'dark') {
+  if (saved) {
     document.documentElement.setAttribute('data-theme', saved);
+  }
+  const savedFont = localStorage.getItem('enem_font_size');
+  if (savedFont) {
+    document.documentElement.style.setProperty('--font-size-base', savedFont + 'px');
   }
 })();
 
-function initThemeToggle() {
-  const btn = document.getElementById('themeToggle');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('enem_theme', next);
-  });
+const THEMES = [
+  { id: 'dark',  name: 'Midnight',  group: 'dark',  color: '#a29bfe' },
+  { id: 'cafe',  name: 'Cafe',      group: 'dark',  color: '#d4a574' },
+  { id: 'ocean', name: 'Ocean',     group: 'dark',  color: '#5bc0eb' },
+  { id: 'light', name: 'Classico',  group: 'light', color: '#6c5ce7' },
+  { id: 'sakura',name: 'Sakura',    group: 'light', color: '#e06090' },
+  { id: 'forest',name: 'Forest',    group: 'light', color: '#2d9a4a' }
+];
+
+function setTheme(themeId) {
+  document.documentElement.setAttribute('data-theme', themeId);
+  localStorage.setItem('enem_theme', themeId);
+}
+
+function getTheme() {
+  return document.documentElement.getAttribute('data-theme') || 'dark';
+}
+
+function setFontSize(sizePx) {
+  document.documentElement.style.setProperty('--font-size-base', sizePx + 'px');
+  localStorage.setItem('enem_font_size', sizePx);
 }
 
 /* ==================== EMOJI PICKER ==================== */
@@ -93,27 +109,6 @@ function initEmojiPickers() {
 const style = document.createElement('style');
 style.textContent = `
   .admin-only.hidden { display: none !important; }
-  .logout-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text-dim);
-    font-size: 12px;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    margin-bottom: 8px;
-  }
-  .logout-btn:hover {
-    color: #e74c3c;
-    border-color: rgba(231,76,60,0.3);
-    background: rgba(231,76,60,0.08);
-  }
   .toast-container {
     position: fixed;
     top: 20px;
@@ -194,6 +189,157 @@ style.textContent = `
     border-color: var(--accent);
     background: var(--accent-bg);
   }
+
+  /* User dropdown menu */
+  .user-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+    z-index: 200;
+    margin-bottom: 8px;
+  }
+  .user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+  }
+  .user-dropdown-item:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+  .user-dropdown-item.danger {
+    color: #e74c3c;
+  }
+  .user-dropdown-item.danger:hover {
+    background: rgba(231,76,60,0.08);
+  }
+  .user-dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+  .sidebar-footer { position: relative; }
+
+  /* Settings modal theme grid */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .theme-card {
+    padding: 12px;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  .theme-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
+  .theme-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .theme-card-preview {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .theme-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .theme-card-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .theme-card-group {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* Font size control */
+  .font-size-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .font-size-control label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+  .font-size-control input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 4px;
+  }
+  .font-size-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 36px;
+    text-align: right;
+  }
+  .font-size-preview {
+    padding: 12px;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  /* Logo styles */
+  .sidebar-logo-img {
+    height: 28px;
+    width: auto;
+    margin-right: 4px;
+  }
+  .login-logo-img {
+    height: 64px;
+    width: auto;
+    margin-bottom: 16px;
+  }
 `;
 document.head.appendChild(style);
 
@@ -223,26 +369,55 @@ function updateSidebarUser() {
 }
 
 function initSidebar() {
-  const sidebarFooter = document.querySelector('.sidebar-footer');
-  if (sidebarFooter) {
-    const userDiv = sidebarFooter.querySelector('.user');
-    const logoutBtn = document.createElement('button');
-    logoutBtn.id = 'logoutBtn';
-    logoutBtn.className = 'logout-btn';
-    logoutBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sair</span>`;
-    if (userDiv) {
-      sidebarFooter.insertBefore(logoutBtn, userDiv);
-    } else {
-      sidebarFooter.appendChild(logoutBtn);
-    }
-  }
-
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => logout());
-  }
-
+  initUserMenu();
   initSidebarCollapse();
+}
+
+function initUserMenu() {
+  const userArea = document.querySelector('.sidebar-footer .user');
+  if (!userArea) return;
+
+  userArea.style.cursor = 'pointer';
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'user-dropdown';
+  dropdown.innerHTML = `
+    <button class="user-dropdown-item" id="btnSettings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configuracoes
+    </button>
+    <div class="user-dropdown-divider"></div>
+    <button class="user-dropdown-item danger" id="btnLogoutSidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair
+    </button>
+  `;
+  userArea.style.position = 'relative';
+  userArea.appendChild(dropdown);
+
+  userArea.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.user-dropdown.show').forEach(d => {
+      if (d !== dropdown) d.classList.remove('show');
+    });
+    dropdown.classList.toggle('show');
+  });
+
+  document.addEventListener('click', () => {
+    dropdown.classList.remove('show');
+  });
+
+  document.getElementById('btnLogoutSidebar').addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.remove('show');
+    logout();
+  });
+
+  document.getElementById('btnSettings').addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.remove('show');
+    openSettings();
+  });
 }
 
 function initSidebarCollapse() {
@@ -277,7 +452,6 @@ function renderSidebar(activePage) {
   const userName = user ? user.name : 'Estudante';
   const userInitial = (userName.split(' ')[0] || 'P')[0].toUpperCase();
   const isAdmin = user && user.role === 'admin';
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
 
   const pages = [
     { id: 'home', href: 'home.html', label: 'Inicio', icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>' },
@@ -302,6 +476,7 @@ function renderSidebar(activePage) {
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="home.html" class="logo-link">
+          <img src="img/logo.png" alt="ENEM" class="sidebar-logo-img" onerror="this.style.display='none'">
           <span class="logo">ENEM</span>
           <span class="logo-sub">Study</span>
         </a>
@@ -310,27 +485,155 @@ function renderSidebar(activePage) {
         ${navLinks}
       </nav>
       <div class="sidebar-footer">
-        <button class="theme-toggle" id="themeToggle">
-          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <span>Tema</span>
-          <div class="toggle-track"><div class="toggle-thumb"></div></div>
-        </button>
         <div class="user">
           <div class="avatar">${userInitial}</div>
           <div class="user-info">
             <span class="user-name">${userName}</span>
             <span class="user-role">${isAdmin ? 'Administrador' : 'Estudante'}</span>
           </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;color:var(--text-dim);flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
     </aside>`;
 }
 
+/* ==================== SETTINGS MODAL ==================== */
+function openSettings() {
+  let overlay = document.getElementById('settingsOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'settingsOverlay';
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal" style="width:480px;">
+        <div class="modal-header">
+          <h2>Configuracoes</h2>
+          <button class="modal-close" id="settingsClose">&times;</button>
+        </div>
+        <div style="padding-bottom:8px">
+          <h3 style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:12px;">Tema</h3>
+          <div class="theme-grid" id="themeGrid"></div>
+
+          <h3 style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:12px;">Tamanho da Fonte</h3>
+          <div class="font-size-control">
+            <label>Aa</label>
+            <input type="range" id="fontSizeSlider" min="11" max="18" step="1" value="${parseInt(localStorage.getItem('enem_font_size') || '14')}">
+            <span class="font-size-value" id="fontSizeValue">${parseInt(localStorage.getItem('enem_font_size') || '14')}px</span>
+          </div>
+          <div class="font-size-preview" id="fontSizePreview">
+            <p>Texto de exemplo para visualizar o tamanho da fonte.</p>
+          </div>
+
+          <h3 style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:12px;">Compactar sidebar</h3>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:16px;">
+            <input type="checkbox" id="compactSidebarCheck" ${localStorage.getItem('enem_sidebar_collapsed') === 'true' ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;">
+            <span style="font-size:13px;color:var(--text-secondary)">Iniciar sidebar compacta</span>
+          </label>
+
+          <button class="btn-submit" id="settingsReset" style="background:var(--bg-card-hover);color:var(--text-secondary);border:1px solid var(--border);">
+            Restaurar padroes
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const grid = document.getElementById('themeGrid');
+    THEMES.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'theme-card' + (getTheme() === t.id ? ' active' : '');
+      card.dataset.theme = t.id;
+      const colors = getThemePreviewColors(t.id);
+      card.innerHTML = `
+        <div class="theme-card-preview">
+          <div class="theme-dot" style="background:${colors[0]}"></div>
+          <div class="theme-dot" style="background:${colors[1]}"></div>
+          <div class="theme-dot" style="background:${colors[2]}"></div>
+          <div class="theme-dot" style="background:${colors[3]}"></div>
+        </div>
+        <div class="theme-card-name">${t.name}</div>
+        <div class="theme-card-group">${t.group === 'dark' ? 'Escuro' : 'Claro'}</div>
+      `;
+      card.addEventListener('click', () => {
+        setTheme(t.id);
+        grid.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        updateFontSizePreview();
+        showToast('Tema alterado para ' + t.name, 'success');
+      });
+      grid.appendChild(card);
+    });
+
+    const slider = document.getElementById('fontSizeSlider');
+    const valueEl = document.getElementById('fontSizeValue');
+    slider.addEventListener('input', () => {
+      const val = slider.value;
+      valueEl.textContent = val + 'px';
+      setFontSize(val);
+      updateFontSizePreview();
+    });
+
+    document.getElementById('compactSidebarCheck').addEventListener('change', function() {
+      localStorage.setItem('enem_sidebar_collapsed', this.checked);
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) {
+        sidebar.classList.toggle('collapsed', this.checked);
+        const collapseBtn = sidebar.querySelector('.sidebar-collapse-btn');
+        if (collapseBtn) {
+          collapseBtn.innerHTML = this.checked
+            ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
+            : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+        }
+      }
+    });
+
+    document.getElementById('settingsReset').addEventListener('click', () => {
+      setTheme('dark');
+      setFontSize(14);
+      localStorage.removeItem('enem_sidebar_collapsed');
+      slider.value = 14;
+      valueEl.textContent = '14px';
+      document.getElementById('compactSidebarCheck').checked = false;
+      grid.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+      grid.querySelector('[data-theme="dark"]').classList.add('active');
+      updateFontSizePreview();
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) sidebar.classList.remove('collapsed');
+      showToast('Configuracoes restauradas', 'success');
+    });
+
+    document.getElementById('settingsClose').addEventListener('click', () => {
+      overlay.classList.remove('show');
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  }
+
+  function updateFontSizePreview() {
+    const preview = document.getElementById('fontSizePreview');
+    if (preview) preview.style.fontSize = 'var(--font-size-base)';
+  }
+
+  overlay.classList.add('show');
+}
+
+function getThemePreviewColors(themeId) {
+  const themes = {
+    dark:  ['#111113', '#1e1e22', '#a29bfe', '#ededef'],
+    cafe:  ['#241c16', '#3a2e22', '#d4a574', '#f0e6d8'],
+    ocean: ['#111820', '#1c2632', '#5bc0eb', '#e0e8f0'],
+    light: ['#ffffff', '#e4e4e7', '#6c5ce7', '#18181b'],
+    sakura:['#ffffff', '#f0d4dc', '#e06090', '#2d1a22'],
+    forest:['#ffffff', '#c8dcc8', '#2d9a4a', '#1a2418']
+  };
+  return themes[themeId] || themes.dark;
+}
+
 /* ==================== RIPPLE EFFECT ==================== */
 function initRipples() {
   document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.btn-primary, .btn-submit, .btn-login, .btn-play, .btn-quiz, button[role="submit"]');
+    const btn = e.target.closest('.btn-primary, .btn-submit, .btn-login, .btn-play, .btn-quiz, .ripple-container, button[role="submit"]');
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const ripple = document.createElement('span');
@@ -489,8 +792,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initFloatingWidget();
   initFocusMode();
 
-  if (!document.querySelector('.right-panel') && !document.getElementById('sidebarRoot')) {
-    const user = requireAuth();
-    if (user) updateSidebarUser();
+  if (document.querySelector('.right-panel')) {
+    return;
   }
+  const user = requireAuth();
+  if (user) updateSidebarUser();
 });
