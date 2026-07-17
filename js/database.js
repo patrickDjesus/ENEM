@@ -262,7 +262,16 @@ async function addVideo(video) {
 
   if (sb) {
     try {
-      const { error } = await sb.from('videos').insert(video);
+      const row = {
+        id: video.id,
+        title: video.title,
+        url: video.url,
+        subject: video.subject,
+        notes: video.notes,
+        user_id: video.user_id,
+        created_at: video.created_at
+      };
+      const { error } = await sb.from('videos').insert(row);
       if (error) throw error;
       const vids = getLS('videos');
       vids.unshift(video);
