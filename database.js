@@ -19,6 +19,9 @@ let supabase = null;
 try {
   if (window.supabase && window.supabase.createClient) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase client initialized OK');
+  } else {
+    console.warn('Supabase JS not loaded yet. window.supabase:', typeof window.supabase);
   }
 } catch(e) {
   console.warn('Supabase init failed:', e);
@@ -47,9 +50,12 @@ const DEFAULT_ADMIN = {
 async function initUsers() {
   if (supabase) {
     try {
-      const { data } = await supabase.from('users').select('id').limit(1);
+      const { data, error } = await supabase.from('users').select('id').limit(1);
+      console.log('initUsers check:', { data, error });
       if (!data || data.length === 0) {
-        await supabase.from('users').insert({ ...DEFAULT_ADMIN });
+        console.log('Inserting default admin...');
+        const { error: insertError } = await supabase.from('users').insert({ ...DEFAULT_ADMIN });
+        console.log('Admin insert result:', insertError);
       }
       return;
     } catch(e) { console.warn('Supabase users init failed:', e); }
@@ -139,15 +145,21 @@ async function removeUser(id) {
 }
 
 async function authenticateUser(email, password) {
+  console.log('authenticateUser called:', email);
   if (supabase) {
     try {
+      console.log('Trying Supabase auth...');
       const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
+      console.log('Supabase result:', { data, error });
       if (!error && data) return data;
     } catch(e) { console.warn('Supabase auth failed:', e); }
+  } else {
+    console.warn('Supabase not available, using localStorage fallback');
   }
 
   await initUsers();
   const users = getLS('users');
+  console.log('localStorage users:', users);
   return users.find(u => u.email === email && u.password === password) || null;
 }
 
