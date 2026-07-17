@@ -288,13 +288,17 @@ async function removeVideo(id) {
   setLS('videos', getLS('videos').filter(v => v.id !== id));
 }
 
-async function addNoteToVideo(videoId, noteText) {
+async function addNoteToVideo(videoId, noteText, timestamp) {
   const vids = await getVideos();
   const v = vids.find(v => v.id === videoId);
   if (!v) return;
 
   if (!v.notes) v.notes = [];
-  v.notes.unshift({ text: noteText, created_at: new Date().toISOString() });
+  const note = { text: noteText, created_at: new Date().toISOString() };
+  if (timestamp !== undefined && timestamp !== null && timestamp >= 0) {
+    note.timestamp = Math.floor(timestamp);
+  }
+  v.notes.unshift(note);
 
   if (sb) {
     try {
@@ -333,6 +337,7 @@ async function getQuizzes() {
 async function addQuiz(quiz) {
   quiz.id = quiz.id || Date.now();
   quiz.created_at = quiz.created_at || new Date().toISOString();
+  if (!quiz.difficulty) quiz.difficulty = 'medio';
 
   if (sb) {
     try {
@@ -523,6 +528,87 @@ async function getWeeklyRanking() {
   return Object.values(userStats)
     .map(u => ({ ...u, avg_pct: Math.round(u.total_score / u.total_quizzes) }))
     .sort((a, b) => b.avg_pct - a.avg_pct);
+}
+
+/* ==================== SHUFFLE UTIL ==================== */
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ==================== BOOKMARKS (DOCUMENTS) ==================== */
+function getBookmarks(docId) {
+  const all = getLS('bookmarks');
+  return all.filter(b => b.docId === docId);
+}
+
+function addBookmark(docId, label, scrollPct) {
+  const all = getLS('bookmarks');
+  all.push({ id: Date.now(), docId, label, scrollPct, created_at: new Date().toISOString() });
+  setLS('bookmarks', all);
+}
+
+function removeBookmark(bookmarkId) {
+  const all = getLS('bookmarks').filter(b => b.id !== bookmarkId);
+  setLS('bookmarks', all);
+}
+
+/* ==================== STREAKS & DAILY GOALS ==================== */
+function getStreakData() {
+  return getLS('streak_data')[0] || { streak: 0, lastDate: null, bestStreak: 0, dailyGoal: 3, dailyDone: 0, dailyDate: null };
+}
+
+function saveStreakData(data) {
+  setLS('streak_data', [data]);
+}
+
+function recordActivity() {
+  const today = new Date().toISOString().slice(0, 10);
+  const data = getStreakData();
+
+  if (data.dailyDate !== today) {
+    data.dailyDone = 0;
+    data.dailyDate = today;
+  }
+
+  data.dailyDone++;
+  saveStreakData(data);
+  return data;
+}
+
+function updateStreakOnLogin() {
+  const today = new Date().toISOString().slice(0, 10);
+  const data = getStreakData();
+
+  if (data.lastDate === today) return data;
+
+  if (data.lastDate) {
+    const last = new Date(data.lastDate);
+    const now = new Date(today);
+    const diffDays = Math.floor((now - last) / 86400000);
+    if (diffDays === 1) {
+      data.streak++;
+    } else if (diffDays > 1) {
+      data.streak = 1;
+    }
+  } else {
+    data.streak = 1;
+  }
+
+  data.lastDate = today;
+  data.bestStreak = Math.max(data.bestStreak, data.streak);
+
+  if (data.dailyDate !== today) {
+    data.dailyDone = 0;
+    data.dailyDate = today;
+  }
+
+  saveStreakData(data);
+  return data;
 }
 
 /* ==================== TIME ESTIMATES ==================== */

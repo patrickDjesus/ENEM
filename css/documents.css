@@ -481,6 +481,166 @@ body {
   background: var(--bg-card-hover);
 }
 
+/* ==================== BOOKMARKS ==================== */
+.pdf-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.btn-bookmark {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-bookmark:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.bookmarks-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  max-height: 300px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  z-index: 200;
+  display: none;
+  overflow: hidden;
+}
+
+.bookmarks-dropdown.show {
+  display: block;
+  animation: modalIn 0.2s ease;
+}
+
+.bookmarks-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.bookmarks-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.bookmarks-close:hover {
+  color: var(--text-primary);
+}
+
+.bookmarks-list {
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.bookmark-item:hover {
+  background: var(--bg-card-hover);
+}
+
+.bookmark-label {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bookmark-pct {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-ghost);
+  font-variant-numeric: tabular-nums;
+}
+
+.bookmark-go, .bookmark-remove {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bookmark-go:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.bookmark-remove:hover {
+  color: #e17055;
+  background: rgba(225,112,85,0.08);
+}
+
+.bookmark-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.bookmark-add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-style: solid;
+}
+
 /* ==================== MOBILE ==================== */
 @media (max-width: 768px) {
   .sidebar {

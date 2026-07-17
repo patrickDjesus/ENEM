@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ENEM - Quizzes</title>
+  <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
@@ -58,6 +59,14 @@
             <label for="quizSubject">Materia *</label>
             <select id="quizSubject" required>
               <option value="">Selecione</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label for="quizDifficulty">Dificuldade</label>
+            <select id="quizDifficulty">
+              <option value="facil">Facil</option>
+              <option value="medio" selected>Medio</option>
+              <option value="dificil">Dificil</option>
             </select>
           </div>
         </div>
@@ -117,6 +126,7 @@
       });
 
       let activeFilter = null;
+      let activeDifficulty = null;
       let questionIndex = 0;
       let quizKeyboardHandler = null;
 
@@ -140,10 +150,15 @@
         });
       }
 
-      async function renderQuizzes(filter) {
+      async function renderQuizzes(filter, diffFilter) {
         activeFilter = filter || null;
+        activeDifficulty = diffFilter || null;
         const allQuizzes = await getQuizzes();
-        const quizzes = allQuizzes.filter(q => !activeFilter || q.subject === activeFilter);
+        const quizzes = allQuizzes.filter(q => {
+          if (activeFilter && q.subject !== activeFilter) return false;
+          if (activeDifficulty && (q.difficulty || 'medio') !== activeDifficulty) return false;
+          return true;
+        });
         const list = document.getElementById('quizList');
         const empty = document.getElementById('emptyState');
         list.innerHTML = '';
@@ -167,6 +182,7 @@
                   <h3>${q.title}</h3>
                   <div class="quiz-meta">
                     <span class="quiz-subject-tag">${s ? s.name : 'Geral'}</span>
+                    <span class="quiz-difficulty-tag diff-${q.difficulty || 'medio'}">${q.difficulty === 'facil' ? 'Facil' : q.difficulty === 'dificil' ? 'Dificil' : 'Medio'}</span>
                     <span class="quiz-count">${q.questions.length} questoes</span>
                     <span class="quiz-date">${formatDate(q.created_at)}</span>
                     <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
@@ -188,7 +204,7 @@
             el.querySelector('.btn-delete-quiz').addEventListener('click', async () => {
               if (confirm('Remover quiz "' + q.title + '"?')) {
                 await removeQuiz(q.id);
-                await renderQuizzes(activeFilter);
+                await renderQuizzes(activeFilter, activeDifficulty);
                 await renderFilters();
               }
             });
@@ -211,7 +227,7 @@
         const allBtn = document.createElement('button');
         allBtn.className = 'filter-btn' + (!activeFilter ? ' active' : '');
         allBtn.textContent = 'Todos';
-        allBtn.addEventListener('click', async () => { activeFilter = null; await renderQuizzes(null); await renderFilters(); });
+        allBtn.addEventListener('click', async () => { activeFilter = null; await renderQuizzes(null, activeDifficulty); await renderFilters(); });
         filters.appendChild(allBtn);
         subjects.forEach(sk => {
           const s = SUBJECTS[sk];
@@ -219,7 +235,19 @@
           btn.className = 'filter-btn' + (activeFilter === sk ? ' active' : '');
           btn.textContent = s ? s.name : sk;
           if (s) btn.style.setProperty('--f-color', s.color);
-          btn.addEventListener('click', async () => { activeFilter = sk; await renderQuizzes(sk); await renderFilters(); });
+          btn.addEventListener('click', async () => { activeFilter = sk; await renderQuizzes(sk, activeDifficulty); await renderFilters(); });
+          filters.appendChild(btn);
+        });
+        const sep = document.createElement('span');
+        sep.style.cssText = 'width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;';
+        filters.appendChild(sep);
+        const diffLabels = { facil: 'Facil', medio: 'Medio', dificil: 'Dificil' };
+        ['facil', 'medio', 'dificil'].forEach(d => {
+          const btn = document.createElement('button');
+          btn.className = 'filter-btn diff-filter-btn' + (activeDifficulty === d ? ' active' : '');
+          btn.textContent = diffLabels[d];
+          btn.dataset.diff = d;
+          btn.addEventListener('click', async () => { activeDifficulty = activeDifficulty === d ? null : d; await renderQuizzes(activeFilter, activeDifficulty); await renderFilters(); });
           filters.appendChild(btn);
         });
       }
@@ -313,13 +341,13 @@
             questions.push({ type: 'mc', text, options: Array.from(opts).map(o => o.value.trim()), correct: parseInt(correct.value) });
           }
         }
-        await addQuiz({ title: document.getElementById('quizTitle').value, subject: document.getElementById('quizSubject').value, questions });
+        await addQuiz({ title: document.getElementById('quizTitle').value, subject: document.getElementById('quizSubject').value, difficulty: document.getElementById('quizDifficulty').value, questions });
         document.getElementById('createOverlay').classList.remove('show');
         this.reset();
         document.getElementById('questionsList').innerHTML = '';
         questionIndex = 0;
         updateCount();
-        await renderQuizzes(activeFilter);
+        await renderQuizzes(activeFilter, activeDifficulty);
         await renderFilters();
       });
 
@@ -330,34 +358,90 @@
         sub.textContent = s ? s.name : 'Geral';
         sub.style.color = '';
 
+        // Shuffle questions and track correct answers
+        const shuffledQuestions = quiz.questions.map((q, origIdx) => {
+          if (q.type !== 'mc') return { ...q, _origIdx: origIdx };
+          const indices = q.options.map((_, i) => i);
+          const shuffledIndices = shuffleArray(indices);
+          const newCorrect = shuffledIndices.indexOf(q.correct);
+          return {
+            ...q,
+            _origIdx: origIdx,
+            options: shuffledIndices.map(i => q.options[i]),
+            correct: newCorrect,
+            _origCorrect: q.correct
+          };
+        });
+        const shuffled = shuffleArray(shuffledQuestions);
+
         let current = 0;
         let score = 0;
         const answers = [];
         let selectedIndex = -1;
 
+        // Timer
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let timerPaused = false;
+
+        function startTimer() {
+          if (timerInterval) clearInterval(timerInterval);
+          timerInterval = setInterval(() => {
+            if (!timerPaused) {
+              timerSeconds++;
+              const el = document.getElementById('quizTimer');
+              if (el) el.textContent = formatTimer(timerSeconds);
+            }
+          }, 1000);
+        }
+
+        function formatTimer(secs) {
+          const m = Math.floor(secs / 60);
+          const s = secs % 60;
+          return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+
+        function stopTimer() {
+          if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        }
+
+        function renderTimerHtml() {
+          return `
+            <div class="quiz-timer-row">
+              <span class="quiz-timer" id="quizTimer">00:00</span>
+              <button class="quiz-timer-btn" id="btnPauseTimer" title="Pausar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+            </div>
+          `;
+        }
+
+        startTimer();
+
         function renderQuestion() {
-          if (current >= quiz.questions.length) { showResult(); return; }
-          const q = quiz.questions[current];
-          const pct = ((current) / quiz.questions.length * 100).toFixed(0);
+          if (current >= shuffled.length) { stopTimer(); showResult(); return; }
+          const q = shuffled[current];
+          const pct = ((current) / shuffled.length * 100).toFixed(0);
           selectedIndex = -1;
 
           if (q.type === 'written') {
-            const savedDraft = localStorage.getItem('quiz_draft_' + quiz.id + '_' + current) || '';
+            const savedDraft = localStorage.getItem('quiz_draft_' + quiz.id + '_' + q._origIdx) || '';
             document.getElementById('playContent').innerHTML = `
+              ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${quiz.questions.length} <span class="q-type-badge badge-written">Escrita</span></div>
+              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-written">Escrita</span></div>
               <p class="play-question">${q.text}</p>
               <textarea id="writtenAnswer" class="written-input" rows="4" placeholder="Digite sua resposta aqui...">${savedDraft}</textarea>
               <button class="btn-submit" id="btnCheckWritten" style="margin-top:12px">Verificar Resposta</button>
               <div id="writtenComparison" style="display:none"></div>
             `;
             document.getElementById('writtenAnswer').addEventListener('input', function() {
-              localStorage.setItem('quiz_draft_' + quiz.id + '_' + current, this.value);
+              localStorage.setItem('quiz_draft_' + quiz.id + '_' + q._origIdx, this.value);
             });
             document.getElementById('btnCheckWritten').addEventListener('click', () => {
               const userAnswer = document.getElementById('writtenAnswer').value.trim();
               if (!userAnswer) { alert('Digite uma resposta.'); return; }
-              localStorage.removeItem('quiz_draft_' + quiz.id + '_' + current);
+              localStorage.removeItem('quiz_draft_' + quiz.id + '_' + q._origIdx);
               document.getElementById('btnCheckWritten').style.display = 'none';
               document.getElementById('writtenAnswer').disabled = true;
               const comp = document.getElementById('writtenComparison');
@@ -376,17 +460,20 @@
               document.getElementById('btnEvalCorrect').addEventListener('click', () => {
                 score++;
                 answers.push({ question: current, userAnswer, correctAnswer: q.answer, isCorrect: true, type: 'written', text: q.text });
+                recordActivity();
                 setTimeout(() => { current++; renderQuestion(); }, 300);
               });
               document.getElementById('btnEvalWrong').addEventListener('click', () => {
                 answers.push({ question: current, userAnswer, correctAnswer: q.answer, isCorrect: false, type: 'written', text: q.text });
+                recordActivity();
                 setTimeout(() => { current++; renderQuestion(); }, 300);
               });
             });
           } else {
             document.getElementById('playContent').innerHTML = `
+              ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${quiz.questions.length} <span style="font-size:11px;color:var(--text-ghost)">(Use setas/teclado ou clique)</span></div>
+              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span style="font-size:11px;color:var(--text-ghost)">(Use setas/teclado ou clique)</span></div>
               <p class="play-question">${q.text}</p>
               <div class="play-options" id="playOptions">
                 ${q.options.map((opt, i) => `
@@ -397,6 +484,16 @@
                 `).join('')}
               </div>
             `;
+            const pauseBtn = document.getElementById('btnPauseTimer');
+            if (pauseBtn) {
+              pauseBtn.addEventListener('click', () => {
+                timerPaused = !timerPaused;
+                pauseBtn.innerHTML = timerPaused
+                  ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>'
+                  : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+                pauseBtn.title = timerPaused ? 'Continuar' : 'Pausar';
+              });
+            }
             const options = document.querySelectorAll('.play-option');
             
             function selectOption(idx) {
@@ -421,6 +518,7 @@
               const isCorrect = idx === q.correct;
               if (isCorrect) score++;
               answers.push({ question: current, selected: idx, correct: q.correct, isCorrect, type: 'mc', text: q.text, options: q.options });
+              recordActivity();
               options.forEach(b => {
                 b.disabled = true;
                 const bIdx = parseInt(b.dataset.index);
@@ -455,19 +553,21 @@
 
         function showResult() {
           if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
-          const pct = Math.round((score / quiz.questions.length) * 100);
+          stopTimer();
+          const pct = Math.round((score / shuffled.length) * 100);
           let msg = pct >= 80 ? 'Excelente!' : pct >= 50 ? 'Bom trabalho!' : 'Continue estudando!';
 
           const user = getCurrentUser();
-          if (user) saveQuizResult(quiz.id, quiz.title, user.id, user.name, score, quiz.questions.length, quiz.subject);
+          if (user) saveQuizResult(quiz.id, quiz.title, user.id, user.name, score, shuffled.length, quiz.subject);
 
           const wrongAnswers = answers.filter(a => !a.isCorrect);
+          const timerStr = formatTimer(timerSeconds);
 
           document.getElementById('playContent').innerHTML = `
             <div class="result">
               <div class="result-circle"><span class="result-pct">${pct}%</span></div>
               <h3 class="result-msg">${msg}</h3>
-              <p class="result-detail">${score} de ${quiz.questions.length} acertos</p>
+              <p class="result-detail">${score} de ${shuffled.length} acertos &middot; Tempo: ${timerStr}</p>
               <div class="result-answers">
                 ${answers.map((a, i) => `
                   <div class="result-answer ${a.isCorrect ? 'correct' : 'wrong'}">
@@ -478,7 +578,13 @@
               </div>
               ${wrongAnswers.length > 0 ? `
                 <div style="text-align:left;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
-                  <h3 style="font-size:15px;font-weight:700;color:var(--text-secondary);margin-bottom:12px">Revisao dos Erros</h3>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <h3 style="font-size:15px;font-weight:700;color:var(--text-secondary)">Revisao dos Erros</h3>
+                    <button class="btn-export-review" id="btnExportReview" title="Exportar revisao">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Exportar
+                    </button>
+                  </div>
                   ${wrongAnswers.map(a => `
                     <div class="review-item was-wrong">
                       <div class="review-question">${a.text}</div>
@@ -496,6 +602,35 @@
               <button class="btn-submit result-btn" onclick="document.getElementById('playOverlay').classList.remove('show')">Fechar</button>
             </div>
           `;
+
+          const exportBtn = document.getElementById('btnExportReview');
+          if (exportBtn && wrongAnswers.length > 0) {
+            exportBtn.addEventListener('click', () => {
+              let txt = 'REVISAO DOS ERROS - ' + quiz.title + '\n';
+              txt += '='.repeat(50) + '\n';
+              txt += 'Acertos: ' + score + '/' + shuffled.length + ' (' + pct + '%)\n';
+              txt += 'Tempo: ' + timerStr + '\n\n';
+              wrongAnswers.forEach((a, i) => {
+                txt += (i + 1) + '. ' + a.text + '\n';
+                if (a.type === 'mc') {
+                  txt += '   Sua resposta: ' + String.fromCharCode(65 + a.selected) + ') ' + a.options[a.selected] + '\n';
+                  txt += '   Correta: ' + String.fromCharCode(65 + a.correct) + ') ' + a.options[a.correct] + '\n';
+                } else {
+                  txt += '   Sua resposta: ' + (a.userAnswer || '(vazio)') + '\n';
+                  txt += '   Modelo: ' + a.correctAnswer + '\n';
+                }
+                txt += '\n';
+              });
+              txt += 'Exportado em: ' + new Date().toLocaleString('pt-BR');
+              const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = 'revisao_' + quiz.title.replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
+              a.click();
+              URL.revokeObjectURL(a.href);
+              showToast('Revisao exportada!', 'success');
+            });
+          }
         }
 
         renderQuestion();

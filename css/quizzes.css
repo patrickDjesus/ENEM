@@ -721,6 +721,106 @@ body {
   background: rgba(0,184,148,0.06);
 }
 
+/* ==================== QUIZ TIMER ==================== */
+.quiz-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 14px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.quiz-timer {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  letter-spacing: 1px;
+}
+
+.quiz-timer-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quiz-timer-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* ==================== DIFFICULTY TAGS ==================== */
+.quiz-difficulty-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.diff-facil {
+  background: rgba(0,184,148,0.1);
+  color: #00b894;
+}
+
+.diff-medio {
+  background: var(--border-input);
+  color: var(--text-dim);
+}
+
+.diff-dificil {
+  background: rgba(225,112,85,0.1);
+  color: #e17055;
+}
+
+.diff-filter-btn[data-diff="facil"].active {
+  border-color: #00b894;
+  color: #00b894;
+}
+
+.diff-filter-btn[data-diff="dificil"].active {
+  border-color: #e17055;
+  color: #e17055;
+}
+
+/* ==================== EXPORT REVIEW ==================== */
+.btn-export-review {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-export-review:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
 /* ==================== PLAY QUIZ ==================== */
 .play-subject {
   font-size: 11px;

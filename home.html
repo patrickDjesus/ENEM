@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ENEM - Dashboard</title>
+  <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
@@ -89,6 +90,31 @@
       </div>
     </section>
 
+    <section class="streak-section" id="streakSection">
+      <div class="streak-card">
+        <div class="streak-left">
+          <div class="streak-flame" id="streakFlame">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 4-4 6-4 10a4 4 0 0 0 8 0c0-4-4-6-4-10z"/></svg>
+          </div>
+          <div class="streak-info">
+            <span class="streak-count" id="streakCount">0</span>
+            <span class="streak-label">dias de ofensiva</span>
+          </div>
+        </div>
+        <div class="streak-divider"></div>
+        <div class="streak-right">
+          <div class="streak-goal-header">
+            <span class="streak-goal-text">Meta diaria</span>
+            <span class="streak-goal-num" id="streakGoalNum">0/3</span>
+          </div>
+          <div class="streak-goal-bar">
+            <div class="streak-goal-fill" id="streakGoalFill" style="width:0%"></div>
+          </div>
+          <span class="streak-best" id="streakBest">Melhor recorde: 0 dias</span>
+        </div>
+      </div>
+    </section>
+
     <div class="content-grid">
       <section class="content-section">
         <div class="section-header">
@@ -159,6 +185,17 @@
       const hour = new Date().getHours();
       const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
       document.getElementById('greeting').textContent = greeting + ', ' + userName.split(' ')[0];
+
+      // Streak
+      const streakData = updateStreakOnLogin();
+      document.getElementById('streakCount').textContent = streakData.streak;
+      document.getElementById('streakGoalNum').textContent = streakData.dailyDone + '/' + streakData.dailyGoal;
+      const goalPct = Math.min(100, Math.round((streakData.dailyDone / streakData.dailyGoal) * 100));
+      document.getElementById('streakGoalFill').style.width = goalPct + '%';
+      document.getElementById('streakBest').textContent = 'Melhor recorde: ' + streakData.bestStreak + ' dias';
+      if (streakData.streak > 0) {
+        document.getElementById('streakFlame').classList.add('active');
+      }
 
       const docs = await getDocuments();
       const vids = await getVideos();

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ENEM - Videos</title>
+  <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
@@ -79,6 +80,9 @@
           <div class="notes-panel-header">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             <h3>Anotacoes</h3>
+            <button class="btn-export-notes" id="btnExportNotes" title="Exportar anotacoes">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
           </div>
           <div class="note-input">
             <div class="textarea-wrapper">
@@ -149,6 +153,25 @@
 
       let activeFilter = null;
       let currentVideoId = null;
+      let ytPlayer = null;
+      let ytReady = false;
+
+      // Load YouTube IFrame API
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+      window.onYouTubeIframeAPIReady = function() {
+        ytReady = true;
+      };
+
+      function getCurrentVideoTime() {
+        if (!ytPlayer) return null;
+        try {
+          return ytPlayer.getCurrentTime();
+        } catch(e) {
+          return null;
+        }
+      }
 
       const listView = document.getElementById('listView');
       const watchView = document.getElementById('watchView');
@@ -300,15 +323,24 @@
         document.getElementById('watchDesc').textContent = vid.description || 'Sem descricao.';
         const ytId = getYoutubeId(vid.url);
         const playerEl = document.getElementById('watchPlayer');
+        ytPlayer = null;
         if (ytId) {
           playerEl.innerHTML = `
             <div class="watch-embed">
-              <iframe
-                src="https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-              ></iframe>
+              <div id="ytPlayerContainer"></div>
             </div>`;
+          function createPlayer() {
+            if (ytReady && window.YT && window.YT.Player) {
+              ytPlayer = new YT.Player('ytPlayerContainer', {
+                videoId: ytId,
+                playerVars: { rel: 0, modestbranding: 1, origin: encodeURIComponent(window.location.origin) },
+                events: { onReady: function(e) { ytPlayer = e.target; } }
+              });
+            } else {
+              setTimeout(createPlayer, 200);
+            }
+          }
+          createPlayer();
         } else {
           playerEl.innerHTML = `
             <div class="watch-embed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-dim);">
@@ -334,8 +366,12 @@
         notes.forEach((note, i) => {
           const el = document.createElement('div');
           el.className = 'note-item';
+          const tsHtml = (note.timestamp !== undefined && note.timestamp !== null)
+            ? `<button class="note-timestamp" data-time="${note.timestamp}" title="Pular para ${formatTimestamp(note.timestamp)}">${formatTimestamp(note.timestamp)}</button>`
+            : '';
           el.innerHTML = `
             <div class="note-content">
+              <div class="note-top-row">${tsHtml}</div>
               <p>${note.text}</p>
               <span class="note-date">${formatDate(note.created_at)}</span>
             </div>
@@ -343,6 +379,17 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           `;
+          const tsBtn = el.querySelector('.note-timestamp');
+          if (tsBtn) {
+            tsBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const time = parseInt(tsBtn.dataset.time);
+              if (ytPlayer && ytPlayer.seekTo) {
+                ytPlayer.seekTo(time, true);
+                ytPlayer.playVideo();
+              }
+            });
+          }
           el.querySelector('.btn-delete-note').addEventListener('click', async () => {
             await removeNoteFromVideo(vid.id, i);
             const allVids = await getVideos();
@@ -353,6 +400,12 @@
           });
           list.appendChild(el);
         });
+      }
+
+      function formatTimestamp(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return m + ':' + String(s).padStart(2, '0');
       }
 
       document.getElementById('btnBack').addEventListener('click', showListView);
@@ -374,13 +427,15 @@
       document.getElementById('btnAddNote').addEventListener('click', async () => {
         const text = document.getElementById('noteText').value.trim();
         if (!text || !currentVideoId) return;
-        await addNoteToVideo(currentVideoId, text);
+        const time = getCurrentVideoTime();
+        await addNoteToVideo(currentVideoId, text, time);
         document.getElementById('noteText').value = '';
         const allVids = await getVideos();
         const vid = allVids.find(v => v.id === currentVideoId);
         renderNotes(vid);
         await renderVideos(activeFilter);
-        showToast('Anotacao salva!', 'success');
+        recordActivity();
+        showToast('Anotacao salva!' + (time !== null ? ' (' + formatTimestamp(time) + ')' : ''), 'success');
       });
 
       document.getElementById('noteText').addEventListener('keydown', e => {
@@ -403,6 +458,30 @@
 
       document.getElementById('videoCommentInput').addEventListener('keydown', e => {
         if (e.key === 'Enter') document.getElementById('videoCommentBtn').click();
+      });
+
+      document.getElementById('btnExportNotes').addEventListener('click', async () => {
+        if (!currentVideoId) return;
+        const allVids = await getVideos();
+        const vid = allVids.find(v => v.id === currentVideoId);
+        if (!vid || !vid.notes || vid.notes.length === 0) {
+          showToast('Nenhuma anotacao para exportar', 'info');
+          return;
+        }
+        let txt = 'ANOTACOES - ' + vid.title + '\n';
+        txt += '='.repeat(50) + '\n\n';
+        vid.notes.forEach((n, i) => {
+          txt += (n.timestamp !== undefined ? '[' + formatTimestamp(n.timestamp) + '] ' : '') + n.text + '\n';
+          txt += '   (' + new Date(n.created_at).toLocaleString('pt-BR') + ')\n\n';
+        });
+        txt += '\nExportado em: ' + new Date().toLocaleString('pt-BR');
+        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'anotacoes_' + vid.title.replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast('Anotacoes exportadas!', 'success');
       });
 
       document.getElementById('vidForm').addEventListener('submit', async function(e) {
