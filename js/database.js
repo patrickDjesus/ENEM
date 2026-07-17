@@ -649,6 +649,107 @@ function getYoutubeId(url) {
   return null;
 }
 
+/* ==================== SIMULADOS ==================== */
+const SIMULADO_AREAS = {
+  linguagens:  { name: 'Linguagens e Códigos', subjects: ['linguagens', 'filosofia'] },
+  humanas:     { name: 'Ciências Humanas',     subjects: ['historia', 'geografia'] },
+  natureza:    { name: 'Ciências da Natureza',  subjects: ['biologia', 'fisica', 'quimica'] },
+  matematica:  { name: 'Matemática',            subjects: ['matematica'] }
+};
+
+function mapSubjectToArea(subject) {
+  for (const [area, info] of Object.entries(SIMULADO_AREAS)) {
+    if (info.subjects.includes(subject)) return area;
+  }
+  return 'linguagens';
+}
+
+async function getSimulados() {
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('simulados').select('*').order('created_at', { ascending: false });
+      if (!error && data) { setLS('simulados', data); return data; }
+    } catch(e) { console.warn('Supabase getSimulados failed:', e); }
+  }
+  return getLS('simulados');
+}
+
+async function addSimulado(sim) {
+  sim.id = sim.id || Date.now();
+  sim.created_at = sim.created_at || new Date().toISOString();
+  sim.answers = sim.answers || {};
+  sim.score = sim.score || 0;
+  sim.total = sim.total || 0;
+  sim.pct = sim.pct || 0;
+  sim.area_scores = sim.area_scores || {};
+  sim.time_spent = sim.time_spent || 0;
+  sim.status = sim.status || 'active';
+
+  if (sb) {
+    try {
+      const row = {
+        id: sim.id, user_id: sim.user_id, title: sim.title,
+        quiz_ids: sim.quiz_ids, questions: sim.questions,
+        answers: sim.answers, score: sim.score, total: sim.total,
+        pct: sim.pct, area_scores: sim.area_scores,
+        time_limit: sim.time_limit, time_spent: sim.time_spent,
+        status: sim.status, started_at: sim.started_at,
+        completed_at: sim.completed_at, created_at: sim.created_at
+      };
+      const { error } = await sb.from('simulados').insert(row);
+      if (error) throw error;
+      const sims = getLS('simulados');
+      sims.unshift(sim);
+      setLS('simulados', sims);
+      return true;
+    } catch(e) { console.warn('Supabase addSimulado failed:', e); }
+  }
+  const sims = getLS('simulados');
+  sims.unshift(sim);
+  setLS('simulados', sims);
+  return true;
+}
+
+async function removeSimulado(id) {
+  if (sb) {
+    try {
+      await sb.from('simulados').delete().eq('id', id);
+    } catch(e) { console.warn('Supabase removeSimulado failed:', e); }
+  }
+  setLS('simulados', getLS('simulados').filter(s => s.id !== id));
+}
+
+async function saveSimuladoProgress(id, answers, timeSpent) {
+  if (sb) {
+    try {
+      await sb.from('simulados').update({ answers, time_spent: timeSpent }).eq('id', id);
+    } catch(e) { console.warn('Supabase saveSimuladoProgress failed:', e); }
+  }
+  const sims = getLS('simulados');
+  const sim = sims.find(s => s.id === id);
+  if (sim) { sim.answers = answers; sim.time_spent = timeSpent; setLS('simulados', sims); }
+}
+
+async function saveSimuladoResult(id, answers, score, total, areaScores, timeSpent) {
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedAt = new Date().toISOString();
+  if (sb) {
+    try {
+      await sb.from('simulados').update({
+        answers, score, total, pct, area_scores: areaScores,
+        time_spent: timeSpent, status: 'completed', completed_at: completedAt
+      }).eq('id', id);
+    } catch(e) { console.warn('Supabase saveSimuladoResult failed:', e); }
+  }
+  const sims = getLS('simulados');
+  const sim = sims.find(s => s.id === id);
+  if (sim) {
+    Object.assign(sim, { answers, score, total, pct, area_scores: areaScores,
+      time_spent: timeSpent, status: 'completed', completed_at: completedAt });
+    setLS('simulados', sims);
+  }
+}
+
 /* ==================== DATE FORMAT ==================== */
 function formatDate(iso) {
   const d = new Date(iso);

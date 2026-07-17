@@ -85,8 +85,18 @@
             </button>
           </div>
           <div class="note-input">
-            <div class="textarea-wrapper">
-              <textarea id="noteText" rows="3" placeholder="Escreva uma anotacao sobre este video..."></textarea>
+            <div class="note-editor-wrapper">
+              <div class="note-toolbar" id="noteToolbar">
+                <button class="note-toolbar-btn" data-command="bold" title="Negrito (Ctrl+B)"><strong>B</strong></button>
+                <button class="note-toolbar-btn" data-command="italic" title="Italico (Ctrl+I)"><em>I</em></button>
+                <button class="note-toolbar-btn" data-command="heading" title="Titulo">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/></svg>
+                </button>
+                <button class="note-toolbar-btn" data-command="insertUnorderedList" title="Lista">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="note-editor" contenteditable="true" id="noteText" data-placeholder="Escreva uma anotacao..."></div>
               <button class="emoji-btn" data-emoji-target="noteText" title="Inserir emoji">&#128578;</button>
             </div>
             <button class="btn-note" id="btnAddNote">
@@ -372,7 +382,7 @@
           el.innerHTML = `
             <div class="note-content">
               <div class="note-top-row">${tsHtml}</div>
-              <p>${note.text}</p>
+              <div class="note-text">${sanitizeNoteHtml(note.text)}</div>
               <span class="note-date">${formatDate(note.created_at)}</span>
             </div>
             <button class="btn-icon btn-delete-note" title="Remover">
@@ -408,6 +418,30 @@
         return m + ':' + String(s).padStart(2, '0');
       }
 
+      function sanitizeNoteHtml(html) {
+        return html.replace(/<\/?script|<\/?iframe|<\/?object|<\/?embed|<\/?form|on\w+\s*=/gi, '<!-- stripped -->');
+      }
+
+      function stripHtml(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      }
+
+      // Toolbar buttons
+      document.querySelectorAll('.note-toolbar-btn').forEach(btn => {
+        btn.addEventListener('mousedown', e => e.preventDefault());
+        btn.addEventListener('click', () => {
+          const cmd = btn.dataset.command;
+          if (cmd === 'heading') {
+            document.execCommand('formatBlock', false, 'h4');
+          } else {
+            document.execCommand(cmd, false, null);
+          }
+          document.getElementById('noteText').focus();
+        });
+      });
+
       document.getElementById('btnBack').addEventListener('click', showListView);
 
       document.getElementById('btnFullscreen').addEventListener('click', () => {
@@ -425,11 +459,12 @@
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
 
       document.getElementById('btnAddNote').addEventListener('click', async () => {
-        const text = document.getElementById('noteText').value.trim();
-        if (!text || !currentVideoId) return;
+        const editor = document.getElementById('noteText');
+        const text = editor.innerHTML.trim();
+        if (!text || text === '<br>' || text === '<div><br></div>' || !currentVideoId) return;
         const time = getCurrentVideoTime();
         await addNoteToVideo(currentVideoId, text, time);
-        document.getElementById('noteText').value = '';
+        editor.innerHTML = '';
         const allVids = await getVideos();
         const vid = allVids.find(v => v.id === currentVideoId);
         renderNotes(vid);
@@ -471,7 +506,7 @@
         let txt = 'ANOTACOES - ' + vid.title + '\n';
         txt += '='.repeat(50) + '\n\n';
         vid.notes.forEach((n, i) => {
-          txt += (n.timestamp !== undefined ? '[' + formatTimestamp(n.timestamp) + '] ' : '') + n.text + '\n';
+          txt += (n.timestamp !== undefined ? '[' + formatTimestamp(n.timestamp) + '] ' : '') + stripHtml(n.text) + '\n';
           txt += '   (' + new Date(n.created_at).toLocaleString('pt-BR') + ')\n\n';
         });
         txt += '\nExportado em: ' + new Date().toLocaleString('pt-BR');
