@@ -281,21 +281,30 @@
         try {
           let file_url = '';
           let file_path = '';
+          let storageAvailable = false;
 
         if (sb) {
-          file_path = `pdfs/${Date.now()}_${file.name}`;
-          const { data, error } = await sb.storage
-            .from(BUCKET)
-            .upload(file_path, file, { contentType: 'application/pdf' });
+          try {
+            file_path = `pdfs/${Date.now()}_${file.name}`;
+            const { data, error } = await sb.storage
+              .from(BUCKET)
+              .upload(file_path, file, { contentType: 'application/pdf' });
 
-          if (error) throw error;
+            if (error) throw error;
 
-          const { data: urlData } = sb.storage
-            .from(BUCKET)
-            .getPublicUrl(file_path);
+            const { data: urlData } = sb.storage
+              .from(BUCKET)
+              .getPublicUrl(file_path);
 
-            file_url = urlData.publicUrl;
-          } else {
+              file_url = urlData.publicUrl;
+              storageAvailable = true;
+          } catch(storageErr) {
+            console.warn('Storage upload failed, falling back to base64:', storageErr);
+            file_path = '';
+          }
+        }
+
+          if (!storageAvailable) {
             file_url = await new Promise((resolve) => {
               const reader = new FileReader();
               reader.onload = () => resolve(reader.result);

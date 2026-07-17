@@ -232,7 +232,7 @@ async function removeDocument(id) {
       const docs = await getDocuments();
       const doc = docs.find(d => d.id === id);
       if (doc && doc.file_path) {
-        await sb.storage.from(BUCKET).remove([doc.file_path]);
+        try { await sb.storage.from(BUCKET).remove([doc.file_path]); } catch(e) { console.warn('Storage remove skipped:', e); }
       }
       await sb.from('documents').delete().eq('id', id);
       setLS('documents', getLS('documents').filter(d => d.id !== id));
@@ -256,19 +256,22 @@ async function getVideos() {
 async function addVideo(video) {
   video.id = video.id || Date.now();
   video.created_at = video.created_at || new Date().toISOString();
-  if (!video.notes) video.notes = [];
 
   if (sb) {
     try {
-      const { error } = await sb.from('videos').insert(video);
+      const insertData = { ...video };
+      delete insertData.notes;
+      const { error } = await sb.from('videos').insert(insertData);
       if (error) throw error;
+      video.notes = video.notes || [];
       const vids = getLS('videos');
       vids.unshift(video);
       setLS('videos', vids);
       return true;
-    } catch(e) { console.warn('Supabase addVideo failed:', e); }
+    } catch(e) { console.warn('Supabase addVideo failed, using localStorage:', e); }
   }
 
+  video.notes = video.notes || [];
   const vids = getLS('videos');
   vids.unshift(video);
   setLS('videos', vids);
