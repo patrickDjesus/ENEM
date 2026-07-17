@@ -268,7 +268,7 @@
         if (!file) return;
 
         const MAX_SIZE = 4 * 1024 * 1024;
-        if (file.size > MAX_SIZE && !supabase) {
+        if (file.size > MAX_SIZE && !sb) {
           alert('Arquivo muito grande para armazenamento local (max 4MB). O Supabase esta indisponivel.');
           return;
         }
@@ -282,17 +282,17 @@
           let file_url = '';
           let file_path = '';
 
-          if (supabase) {
-            file_path = `pdfs/${Date.now()}_${file.name}`;
-            const { data, error } = await supabase.storage
-              .from(BUCKET)
-              .upload(file_path, file, { contentType: 'application/pdf' });
+        if (sb) {
+          file_path = `pdfs/${Date.now()}_${file.name}`;
+          const { data, error } = await sb.storage
+            .from(BUCKET)
+            .upload(file_path, file, { contentType: 'application/pdf' });
 
-            if (error) throw error;
+          if (error) throw error;
 
-            const { data: urlData } = supabase.storage
-              .from(BUCKET)
-              .getPublicUrl(file_path);
+          const { data: urlData } = sb.storage
+            .from(BUCKET)
+            .getPublicUrl(file_path);
 
             file_url = urlData.publicUrl;
           } else {

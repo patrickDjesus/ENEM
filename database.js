@@ -15,13 +15,13 @@ const SUPABASE_URL = 'https://pymtagngzrzupbvbarrl.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zapw9ov_DxM2BnJU5wG58A_Y8eVZphO';
 const BUCKET = 'documents';
 
-let supabase = null;
+let sb = null;
 try {
   if (window.supabase && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('Supabase client initialized OK');
   } else {
-    console.warn('Supabase JS not loaded yet. window.supabase:', typeof window.supabase);
+    console.warn('Supabase JS not loaded. window.supabase:', typeof window.supabase);
   }
 } catch(e) {
   console.warn('Supabase init failed:', e);
@@ -48,13 +48,13 @@ const DEFAULT_ADMIN = {
 };
 
 async function initUsers() {
-  if (supabase) {
+  if (sb) {
     try {
-      const { data, error } = await supabase.from('users').select('id').limit(1);
+      const { data, error } = await sb.from('users').select('id').limit(1);
       console.log('initUsers check:', { data, error });
       if (!data || data.length === 0) {
         console.log('Inserting default admin...');
-        const { error: insertError } = await supabase.from('users').insert({ ...DEFAULT_ADMIN });
+        const { error: insertError } = await sb.from('users').insert({ ...DEFAULT_ADMIN });
         console.log('Admin insert result:', insertError);
       }
       return;
@@ -67,9 +67,9 @@ async function initUsers() {
 }
 
 async function getUsers() {
-  if (supabase) {
+  if (sb) {
     try {
-      const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+      const { data, error } = await sb.from('users').select('*').order('created_at', { ascending: false });
       if (!error && data) { setLS('users', data); return data; }
     } catch(e) { console.warn('Supabase getUsers failed:', e); }
   }
@@ -81,9 +81,9 @@ async function addUser(user) {
   user.created_at = user.created_at || new Date().toISOString();
   if (!user.role) user.role = 'user';
 
-  if (supabase) {
+  if (sb) {
     try {
-      const { error } = await supabase.from('users').insert(user);
+      const { error } = await sb.from('users').insert(user);
       if (error) {
         if (error.code === '23505') return false;
         throw error;
@@ -103,9 +103,9 @@ async function addUser(user) {
 }
 
 async function updateUser(id, data) {
-  if (supabase) {
+  if (sb) {
     try {
-      const { error } = await supabase.from('users').update(data).eq('id', id);
+      const { error } = await sb.from('users').update(data).eq('id', id);
       if (error) {
         if (error.code === '23505') return false;
         throw error;
@@ -132,9 +132,9 @@ async function updateUser(id, data) {
 async function removeUser(id) {
   if (id === 1) return false;
 
-  if (supabase) {
+  if (sb) {
     try {
-      await supabase.from('users').delete().eq('id', id);
+      await sb.from('users').delete().eq('id', id);
       setLS('users', getLS('users').filter(u => u.id !== id));
       return true;
     } catch(e) { console.warn('Supabase removeUser failed:', e); }
@@ -146,10 +146,10 @@ async function removeUser(id) {
 
 async function authenticateUser(email, password) {
   console.log('authenticateUser called:', email);
-  if (supabase) {
+  if (sb) {
     try {
       console.log('Trying Supabase auth...');
-      const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
+      const { data, error } = await sb.from('users').select('*').eq('email', email).eq('password', password).single();
       console.log('Supabase result:', { data, error });
       if (!error && data) return data;
     } catch(e) { console.warn('Supabase auth failed:', e); }
@@ -196,9 +196,9 @@ function isAdmin() {
 
 /* ==================== DOCUMENTS ==================== */
 async function getDocuments() {
-  if (supabase) {
+  if (sb) {
     try {
-      const { data, error } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
+      const { data, error } = await sb.from('documents').select('*').order('created_at', { ascending: false });
       if (!error && data) { setLS('documents', data); return data; }
     } catch(e) { console.warn('Supabase getDocuments failed:', e); }
   }
@@ -209,9 +209,9 @@ async function addDocument(doc) {
   doc.id = doc.id || Date.now();
   doc.created_at = doc.created_at || new Date().toISOString();
 
-  if (supabase) {
+  if (sb) {
     try {
-      const { error } = await supabase.from('documents').insert(doc);
+      const { error } = await sb.from('documents').insert(doc);
       if (error) throw error;
       const docs = getLS('documents');
       docs.unshift(doc);
@@ -227,14 +227,14 @@ async function addDocument(doc) {
 }
 
 async function removeDocument(id) {
-  if (supabase) {
+  if (sb) {
     try {
       const docs = await getDocuments();
       const doc = docs.find(d => d.id === id);
       if (doc && doc.file_path) {
-        await supabase.storage.from(BUCKET).remove([doc.file_path]);
+        await sb.storage.from(BUCKET).remove([doc.file_path]);
       }
-      await supabase.from('documents').delete().eq('id', id);
+      await sb.from('documents').delete().eq('id', id);
       setLS('documents', getLS('documents').filter(d => d.id !== id));
       return;
     } catch(e) { console.warn('Supabase removeDocument failed:', e); }
@@ -244,9 +244,9 @@ async function removeDocument(id) {
 
 /* ==================== VIDEOS ==================== */
 async function getVideos() {
-  if (supabase) {
+  if (sb) {
     try {
-      const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+      const { data, error } = await sb.from('videos').select('*').order('created_at', { ascending: false });
       if (!error && data) { setLS('videos', data); return data; }
     } catch(e) { console.warn('Supabase getVideos failed:', e); }
   }
@@ -258,9 +258,9 @@ async function addVideo(video) {
   video.created_at = video.created_at || new Date().toISOString();
   if (!video.notes) video.notes = [];
 
-  if (supabase) {
+  if (sb) {
     try {
-      const { error } = await supabase.from('videos').insert(video);
+      const { error } = await sb.from('videos').insert(video);
       if (error) throw error;
       const vids = getLS('videos');
       vids.unshift(video);
@@ -276,9 +276,9 @@ async function addVideo(video) {
 }
 
 async function removeVideo(id) {
-  if (supabase) {
+  if (sb) {
     try {
-      await supabase.from('videos').delete().eq('id', id);
+      await sb.from('videos').delete().eq('id', id);
       setLS('videos', getLS('videos').filter(v => v.id !== id));
       return;
     } catch(e) { console.warn('Supabase removeVideo failed:', e); }
@@ -294,9 +294,9 @@ async function addNoteToVideo(videoId, noteText) {
   if (!v.notes) v.notes = [];
   v.notes.unshift({ text: noteText, created_at: new Date().toISOString() });
 
-  if (supabase) {
+  if (sb) {
     try {
-      await supabase.from('videos').update({ notes: v.notes }).eq('id', videoId);
+      await sb.from('videos').update({ notes: v.notes }).eq('id', videoId);
     } catch(e) { console.warn('Supabase addNote failed:', e); }
   }
   setLS('videos', vids);
@@ -309,9 +309,9 @@ async function removeNoteFromVideo(videoId, noteIndex) {
 
   if (v.notes) v.notes.splice(noteIndex, 1);
 
-  if (supabase) {
+  if (sb) {
     try {
-      await supabase.from('videos').update({ notes: v.notes }).eq('id', videoId);
+      await sb.from('videos').update({ notes: v.notes }).eq('id', videoId);
     } catch(e) { console.warn('Supabase removeNote failed:', e); }
   }
   setLS('videos', vids);
@@ -319,9 +319,9 @@ async function removeNoteFromVideo(videoId, noteIndex) {
 
 /* ==================== QUIZZES ==================== */
 async function getQuizzes() {
-  if (supabase) {
+  if (sb) {
     try {
-      const { data, error } = await supabase.from('quizzes').select('*').order('created_at', { ascending: false });
+      const { data, error } = await sb.from('quizzes').select('*').order('created_at', { ascending: false });
       if (!error && data) { setLS('quizzes', data); return data; }
     } catch(e) { console.warn('Supabase getQuizzes failed:', e); }
   }
@@ -332,9 +332,9 @@ async function addQuiz(quiz) {
   quiz.id = quiz.id || Date.now();
   quiz.created_at = quiz.created_at || new Date().toISOString();
 
-  if (supabase) {
+  if (sb) {
     try {
-      const { error } = await supabase.from('quizzes').insert(quiz);
+      const { error } = await sb.from('quizzes').insert(quiz);
       if (error) throw error;
       const quizzes = getLS('quizzes');
       quizzes.unshift(quiz);
@@ -350,9 +350,9 @@ async function addQuiz(quiz) {
 }
 
 async function removeQuiz(id) {
-  if (supabase) {
+  if (sb) {
     try {
-      await supabase.from('quizzes').delete().eq('id', id);
+      await sb.from('quizzes').delete().eq('id', id);
       setLS('quizzes', getLS('quizzes').filter(q => q.id !== id));
       return;
     } catch(e) { console.warn('Supabase removeQuiz failed:', e); }
