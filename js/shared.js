@@ -334,11 +334,14 @@ style.textContent = `
     height: 28px;
     width: auto;
     margin-right: 4px;
+    display: block;
+    flex-shrink: 0;
   }
   .login-logo-img {
     height: 64px;
     width: auto;
-    margin-bottom: 16px;
+    margin: 0 auto 16px;
+    display: block;
   }
 `;
 document.head.appendChild(style);

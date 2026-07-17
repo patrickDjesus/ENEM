@@ -101,6 +101,8 @@ body {
   color: var(--text-dim);
   margin-top: 28px;
   max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
   line-height: 1.7;
   transition: color 0.5s ease;
 }
