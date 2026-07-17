@@ -141,110 +141,109 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="database.js"></script>
   <script>
-    const h = new Date().getHours();
-    document.getElementById('greeting').textContent =
-      h < 12 ? 'Bom dia, Patrick' : h < 18 ? 'Boa tarde, Patrick' : 'Boa noite, Patrick';
+    (async function() {
+      const currentUser = getCurrentUser();
+      const userName = currentUser ? currentUser.name : 'Estudante';
+      const hour = new Date().getHours();
+      const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+      document.getElementById('greeting').textContent = greeting + ', ' + userName.split(' ')[0];
 
-    const currentUser = getCurrentUser();
-    const userName = currentUser ? currentUser.name : 'Estudante';
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-    document.getElementById('greeting').textContent = greeting + ', ' + userName.split(' ')[0];
+      const docs = await getDocuments();
+      const vids = await getVideos();
+      const quizzes = await getQuizzes();
+      let totalNotes = 0;
+      vids.forEach(v => totalNotes += (v.notes || []).length);
 
-    const docs = getDB('documents');
-    const vids = getDB('videos');
-    const quizzes = getDB('quizzes');
-    let totalNotes = 0;
-    vids.forEach(v => totalNotes += (v.notes || []).length);
+      document.getElementById('statDocs').textContent = docs.length;
+      document.getElementById('statVids').textContent = vids.length;
+      document.getElementById('statNotes').textContent = totalNotes;
+      document.getElementById('statQuizzes').textContent = quizzes.length;
 
-    document.getElementById('statDocs').textContent = docs.length;
-    document.getElementById('statVids').textContent = vids.length;
-    document.getElementById('statNotes').textContent = totalNotes;
-    document.getElementById('statQuizzes').textContent = quizzes.length;
+      // Recent content
+      const all = [
+        ...docs.map(d => ({ ...d, _type: 'doc' })),
+        ...vids.map(v => ({ ...v, _type: 'video' }))
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
 
-    // Recent content
-    const all = [
-      ...docs.map(d => ({ ...d, _type: 'doc' })),
-      ...vids.map(v => ({ ...v, _type: 'video' }))
-    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+      const rc = document.getElementById('recentContent');
+      const es = document.getElementById('emptyState');
+      if (all.length === 0) {
+        es.style.display = 'flex';
+      } else {
+        all.forEach(item => {
+          const s = SUBJECTS[item.subject];
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.borderLeftColor = s ? s.color : '#333';
+          card.innerHTML = `
+            <div class="card-badge" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">
+              ${item._type === 'doc' ? 'PDF' : 'Video'}
+            </div>
+            <h3>${item.title}</h3>
+            <p>${item.description || (s ? s.name : '')}</p>
+          `;
+          rc.appendChild(card);
+        });
+      }
 
-    const rc = document.getElementById('recentContent');
-    const es = document.getElementById('emptyState');
-    if (all.length === 0) {
-      es.style.display = 'flex';
-    } else {
-      all.forEach(item => {
-        const s = SUBJECTS[item.subject];
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.borderLeftColor = s ? s.color : '#333';
-        card.innerHTML = `
-          <div class="card-badge" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">
-            ${item._type === 'doc' ? 'PDF' : 'Video'}
-          </div>
-          <h3>${item.title}</h3>
-          <p>${item.description || (s ? s.name : '')}</p>
+      // Subject breakdown
+      const sb = document.getElementById('subjectBreakdown');
+      const counts = {};
+      docs.forEach(d => { counts[d.subject] = (counts[d.subject] || 0) + 1; });
+      vids.forEach(v => { counts[v.subject] = (counts[v.subject] || 0) + 1; });
+      const maxCount = Math.max(1, ...Object.values(counts));
+      Object.keys(SUBJECTS).forEach(key => {
+        const s = SUBJECTS[key];
+        const count = counts[key] || 0;
+        const pct = Math.round((count / maxCount) * 100);
+        const el = document.createElement('div');
+        el.className = 'subject-row';
+        el.innerHTML = `
+          <div class="subject-dot" style="background:${s.color}"></div>
+          <span class="subject-name">${s.name}</span>
+          <div class="subject-bar"><div class="subject-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+          <span class="subject-count">${count}</span>
         `;
-        rc.appendChild(card);
+        sb.appendChild(el);
       });
-    }
 
-    // Subject breakdown
-    const sb = document.getElementById('subjectBreakdown');
-    const counts = {};
-    docs.forEach(d => { counts[d.subject] = (counts[d.subject] || 0) + 1; });
-    vids.forEach(v => { counts[v.subject] = (counts[v.subject] || 0) + 1; });
-    const maxCount = Math.max(1, ...Object.values(counts));
-    Object.keys(SUBJECTS).forEach(key => {
-      const s = SUBJECTS[key];
-      const count = counts[key] || 0;
-      const pct = Math.round((count / maxCount) * 100);
-      const el = document.createElement('div');
-      el.className = 'subject-row';
-      el.innerHTML = `
-        <div class="subject-dot" style="background:${s.color}"></div>
-        <span class="subject-name">${s.name}</span>
-        <div class="subject-bar"><div class="subject-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
-        <span class="subject-count">${count}</span>
-      `;
-      sb.appendChild(el);
-    });
+      // Quizzes
+      const qg = document.getElementById('homeQuizzes');
+      const eq = document.getElementById('emptyQuizzes');
+      const topQuizzes = quizzes.slice(0, 3);
+      if (topQuizzes.length === 0) {
+        eq.style.display = 'flex';
+      } else {
+        topQuizzes.forEach(q => {
+          const s = SUBJECTS[q.subject];
+          const card = document.createElement('div');
+          card.className = 'quiz-card';
+          card.innerHTML = `
+            <div class="quiz-info">
+              <span class="quiz-subject" style="color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
+              <h3>${q.title}</h3>
+              <p>${q.questions.length} questoes</p>
+            </div>
+            <div class="quiz-action">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+            </div>
+          `;
+          qg.appendChild(card);
+        });
+      }
 
-    // Quizzes
-    const qg = document.getElementById('homeQuizzes');
-    const eq = document.getElementById('emptyQuizzes');
-    const topQuizzes = quizzes.slice(0, 3);
-    if (topQuizzes.length === 0) {
-      eq.style.display = 'flex';
-    } else {
-      topQuizzes.forEach(q => {
-        const s = SUBJECTS[q.subject];
-        const card = document.createElement('div');
-        card.className = 'quiz-card';
-        card.innerHTML = `
-          <div class="quiz-info">
-            <span class="quiz-subject" style="color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
-            <h3>${q.title}</h3>
-            <p>${q.questions.length} questoes</p>
-          </div>
-          <div class="quiz-action">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
-          </div>
-        `;
-        qg.appendChild(card);
+      // Search
+      document.getElementById('searchInput').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        const cards = rc.querySelectorAll('.card');
+        cards.forEach(c => {
+          c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
       });
-    }
-
-    // Search
-    document.getElementById('searchInput').addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      const cards = rc.querySelectorAll('.card');
-      cards.forEach(c => {
-        c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
-      });
-    });
+    })();
   </script>
   <script src="shared.js"></script>
 </body>

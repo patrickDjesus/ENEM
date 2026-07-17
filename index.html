@@ -75,6 +75,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="database.js"></script>
   <script>
     (function() {
@@ -87,8 +88,9 @@
       const form = document.getElementById('loginForm');
       const errorEl = document.getElementById('loginError');
       const errorText = document.getElementById('loginErrorText');
+      const btnLogin = document.querySelector('.btn-login');
 
-      form.addEventListener('submit', function(e) {
+      form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
@@ -99,15 +101,26 @@
           return;
         }
 
-        const user = authenticateUser(email, password);
-        if (user) {
-          setCurrentUser(user);
-          window.location.href = 'home.html';
-        } else {
-          errorText.textContent = 'E-mail ou senha invalidos';
+        btnLogin.disabled = true;
+        btnLogin.querySelector('span').textContent = 'Entrando...';
+
+        try {
+          const user = await authenticateUser(email, password);
+          if (user) {
+            setCurrentUser(user);
+            window.location.href = 'home.html';
+          } else {
+            errorText.textContent = 'E-mail ou senha invalidos';
+            errorEl.style.display = 'flex';
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+          }
+        } catch(err) {
+          errorText.textContent = 'Erro ao conectar. Tente novamente.';
           errorEl.style.display = 'flex';
-          document.getElementById('password').value = '';
-          document.getElementById('password').focus();
+        } finally {
+          btnLogin.disabled = false;
+          btnLogin.querySelector('span').textContent = 'Entrar';
         }
       });
     })();

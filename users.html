@@ -112,136 +112,140 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="database.js"></script>
   <script>
-    const grid = document.getElementById('usersGrid');
-    const emptyState = document.getElementById('emptyState');
-    const modal = document.getElementById('userModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const userForm = document.getElementById('userForm');
-    const editUserId = document.getElementById('editUserId');
-    const userName = document.getElementById('userName');
-    const userEmail = document.getElementById('userEmail');
-    const userPassword = document.getElementById('userPassword');
-    const userRole = document.getElementById('userRole');
-    const currentUser = getCurrentUser();
+    (async function() {
+      const grid = document.getElementById('usersGrid');
+      const emptyState = document.getElementById('emptyState');
+      const modal = document.getElementById('userModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const userForm = document.getElementById('userForm');
+      const editUserId = document.getElementById('editUserId');
+      const userName = document.getElementById('userName');
+      const userEmail = document.getElementById('userEmail');
+      const userPassword = document.getElementById('userPassword');
+      const userRole = document.getElementById('userRole');
+      const currentUser = getCurrentUser();
 
-    function renderUsers() {
-      const users = getUsers();
-      grid.innerHTML = '';
-      if (users.length === 0) {
-        emptyState.style.display = 'flex';
-        return;
-      }
-      emptyState.style.display = 'none';
-      users.forEach(u => {
-        const initial = (u.name || '?')[0].toUpperCase();
-        const roleLabel = u.role === 'admin' ? 'Admin' : 'Estudante';
-        const roleClass = u.role === 'admin' ? 'role-admin' : 'role-user';
-        const created = new Date(u.createdAt).toLocaleDateString('pt-BR');
-        const canDelete = u.id !== 1 && u.id !== currentUser?.id;
-        const card = document.createElement('div');
-        card.className = 'user-card';
-        card.innerHTML = `
-          <div class="user-card-header">
-            <div class="user-card-avatar">${initial}</div>
-            <div class="user-card-info">
-              <span class="user-card-name">${u.name}</span>
-              <span class="user-card-role ${roleClass}">${roleLabel}</span>
-            </div>
-          </div>
-          <div class="user-card-email">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-            ${u.email}
-          </div>
-          <div class="user-card-footer">
-            <span class="user-card-date">Criado em ${created}</span>
-            <div class="user-card-actions">
-              <button class="btn-icon" data-action="edit" data-id="${u.id}" title="Editar">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              ${canDelete ? `<button class="btn-icon btn-icon-danger" data-action="delete" data-id="${u.id}" title="Excluir">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              </button>` : ''}
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function openModal(user) {
-      if (user) {
-        modalTitle.textContent = 'Editar Usuario';
-        editUserId.value = user.id;
-        userName.value = user.name;
-        userEmail.value = user.email;
-        userPassword.value = '';
-        userPassword.placeholder = 'Deixe vazio para manter';
-        userPassword.required = false;
-        userRole.value = user.role || 'user';
-      } else {
-        modalTitle.textContent = 'Novo Usuario';
-        editUserId.value = '';
-        userForm.reset();
-        userPassword.placeholder = 'Minimo 6 caracteres';
-        userPassword.required = true;
-      }
-      modal.classList.add('show');
-    }
-
-    function closeModal() {
-      modal.classList.remove('show');
-      userForm.reset();
-      editUserId.value = '';
-      userPassword.required = true;
-      userPassword.placeholder = 'Minimo 6 caracteres';
-    }
-
-    document.getElementById('btnAddUser').addEventListener('click', () => openModal(null));
-    document.getElementById('modalClose').addEventListener('click', closeModal);
-    document.getElementById('modalCancel').addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-
-    userForm.addEventListener('submit', () => {
-      const name = userName.value.trim();
-      const email = userEmail.value.trim();
-      const password = userPassword.value;
-      const role = userRole.value;
-      const id = editUserId.value ? parseInt(editUserId.value) : null;
-
-      if (!name || !email) return;
-      if (!id && password.length < 6) { alert('A senha deve ter no minimo 6 caracteres.'); return; }
-
-      if (id) {
-        const data = { name, email, role };
-        if (password) data.password = password;
-        const ok = updateUser(id, data);
-        if (!ok) { alert('E-mail ja esta em uso.'); return; }
-      } else {
-        const ok = addUser({ name, email, password, role });
-        if (!ok) { alert('E-mail ja esta em uso.'); return; }
-      }
-      closeModal();
-      renderUsers();
-    });
-
-    grid.addEventListener('click', e => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      const id = parseInt(btn.dataset.id);
-      if (btn.dataset.action === 'edit') {
-        const user = getUsers().find(u => u.id === id);
-        if (user) openModal(user);
-      } else if (btn.dataset.action === 'delete') {
-        if (confirm('Tem certeza que deseja excluir este usuario?')) {
-          removeUser(id);
-          renderUsers();
+      async function renderUsers() {
+        const users = await getUsers();
+        grid.innerHTML = '';
+        if (users.length === 0) {
+          emptyState.style.display = 'flex';
+          return;
         }
+        emptyState.style.display = 'none';
+        users.forEach(u => {
+          const initial = (u.name || '?')[0].toUpperCase();
+          const roleLabel = u.role === 'admin' ? 'Admin' : 'Estudante';
+          const roleClass = u.role === 'admin' ? 'role-admin' : 'role-user';
+          const created = new Date(u.created_at).toLocaleDateString('pt-BR');
+          const canDelete = u.id !== 1 && u.id !== currentUser?.id;
+          const card = document.createElement('div');
+          card.className = 'user-card';
+          card.innerHTML = `
+            <div class="user-card-header">
+              <div class="user-card-avatar">${initial}</div>
+              <div class="user-card-info">
+                <span class="user-card-name">${u.name}</span>
+                <span class="user-card-role ${roleClass}">${roleLabel}</span>
+              </div>
+            </div>
+            <div class="user-card-email">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              ${u.email}
+            </div>
+            <div class="user-card-footer">
+              <span class="user-card-date">Criado em ${created}</span>
+              <div class="user-card-actions">
+                <button class="btn-icon" data-action="edit" data-id="${u.id}" title="Editar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                ${canDelete ? `<button class="btn-icon btn-icon-danger" data-action="delete" data-id="${u.id}" title="Excluir">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>` : ''}
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
       }
-    });
 
-    renderUsers();
+      function openModal(user) {
+        if (user) {
+          modalTitle.textContent = 'Editar Usuario';
+          editUserId.value = user.id;
+          userName.value = user.name;
+          userEmail.value = user.email;
+          userPassword.value = '';
+          userPassword.placeholder = 'Deixe vazio para manter';
+          userPassword.required = false;
+          userRole.value = user.role || 'user';
+        } else {
+          modalTitle.textContent = 'Novo Usuario';
+          editUserId.value = '';
+          userForm.reset();
+          userPassword.placeholder = 'Minimo 6 caracteres';
+          userPassword.required = true;
+        }
+        modal.classList.add('show');
+      }
+
+      function closeModal() {
+        modal.classList.remove('show');
+        userForm.reset();
+        editUserId.value = '';
+        userPassword.required = true;
+        userPassword.placeholder = 'Minimo 6 caracteres';
+      }
+
+      document.getElementById('btnAddUser').addEventListener('click', () => openModal(null));
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalCancel').addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+      userForm.addEventListener('submit', async () => {
+        const name = userName.value.trim();
+        const email = userEmail.value.trim();
+        const password = userPassword.value;
+        const role = userRole.value;
+        const id = editUserId.value ? parseInt(editUserId.value) : null;
+
+        if (!name || !email) return;
+        if (!id && password.length < 6) { alert('A senha deve ter no minimo 6 caracteres.'); return; }
+
+        if (id) {
+          const data = { name, email, role };
+          if (password) data.password = password;
+          const ok = await updateUser(id, data);
+          if (!ok) { alert('E-mail ja esta em uso.'); return; }
+        } else {
+          const ok = await addUser({ name, email, password, role });
+          if (!ok) { alert('E-mail ja esta em uso.'); return; }
+        }
+        closeModal();
+        await renderUsers();
+      });
+
+      grid.addEventListener('click', async e => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const id = parseInt(btn.dataset.id);
+        if (btn.dataset.action === 'edit') {
+          const users = await getUsers();
+          const user = users.find(u => u.id === id);
+          if (user) openModal(user);
+        } else if (btn.dataset.action === 'delete') {
+          if (confirm('Tem certeza que deseja excluir este usuario?')) {
+            await removeUser(id);
+            await renderUsers();
+          }
+        }
+      });
+
+      await renderUsers();
+    })();
   </script>
   <script src="shared.js"></script>
 </body>

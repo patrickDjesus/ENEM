@@ -140,206 +140,212 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="database.js"></script>
   <script>
-    const select = document.getElementById('vidSubject');
-    Object.keys(SUBJECTS).forEach(k => {
-      const o = document.createElement('option');
-      o.value = k;
-      o.textContent = SUBJECTS[k].name;
-      select.appendChild(o);
-    });
+    (async function() {
+      const select = document.getElementById('vidSubject');
+      Object.keys(SUBJECTS).forEach(k => {
+        const o = document.createElement('option');
+        o.value = k;
+        o.textContent = SUBJECTS[k].name;
+        select.appendChild(o);
+      });
 
-    let activeFilter = null;
-    let currentVideoId = null;
+      let activeFilter = null;
+      let currentVideoId = null;
 
-    function renderVideos(filter) {
-      activeFilter = filter || null;
-      const vids = getDB('videos').filter(v => !activeFilter || v.subject === activeFilter);
-      const list = document.getElementById('videoList');
-      const empty = document.getElementById('emptyState');
-      list.innerHTML = '';
-      if (vids.length === 0) {
-        empty.style.display = 'flex';
-      } else {
-        empty.style.display = 'none';
-        vids.forEach(vid => {
-          const s = SUBJECTS[vid.subject];
-          const ytId = getYoutubeId(vid.url);
-          const el = document.createElement('div');
-          el.className = 'video-card';
-          el.style.setProperty('--subject-color', s ? s.color : '#666');
-          el.innerHTML = `
-            <div class="video-thumb">
-              ${ytId
-                ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" alt="">`
-                : `<div class="thumb-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>`
-              }
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      async function renderVideos(filter) {
+        activeFilter = filter || null;
+        const allVids = await getVideos();
+        const vids = allVids.filter(v => !activeFilter || v.subject === activeFilter);
+        const list = document.getElementById('videoList');
+        const empty = document.getElementById('emptyState');
+        list.innerHTML = '';
+        if (vids.length === 0) {
+          empty.style.display = 'flex';
+        } else {
+          empty.style.display = 'none';
+          vids.forEach(vid => {
+            const s = SUBJECTS[vid.subject];
+            const ytId = getYoutubeId(vid.url);
+            const el = document.createElement('div');
+            el.className = 'video-card';
+            el.style.setProperty('--subject-color', s ? s.color : '#666');
+            el.innerHTML = `
+              <div class="video-thumb">
+                ${ytId
+                  ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" alt="">`
+                  : `<div class="thumb-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>`
+                }
+                <div class="play-overlay">
+                  <div class="play-btn">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="video-info">
-              <span class="video-subject" style="background:${s ? s.colorLight : 'var(--bg-input)'};color:${s ? s.color : 'var(--text-muted)'}">${s ? s.name : 'Geral'}</span>
-              <h3>${vid.title}</h3>
-              ${vid.description ? `<p>${vid.description}</p>` : ''}
-              <div class="video-meta">
-                <span>${formatDate(vid.createdAt)}</span>
-                <span class="meta-dot"></span>
-                <span>${(vid.notes || []).length} anotacao(oes)</span>
+              <div class="video-info">
+                <span class="video-subject" style="background:${s ? s.colorLight : 'var(--bg-input)'};color:${s ? s.color : 'var(--text-muted)'}">${s ? s.name : 'Geral'}</span>
+                <h3>${vid.title}</h3>
+                ${vid.description ? `<p>${vid.description}</p>` : ''}
+                <div class="video-meta">
+                  <span>${formatDate(vid.created_at)}</span>
+                  <span class="meta-dot"></span>
+                  <span>${(vid.notes || []).length} anotacao(oes)</span>
+                </div>
               </div>
+              <div class="video-actions">
+                <button class="btn-icon btn-watch" title="Assistir">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+                </button>
+                <button class="btn-icon btn-delete" title="Remover">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            `;
+            el.querySelector('.btn-watch').addEventListener('click', () => watchVideo(vid));
+            el.querySelector('.video-thumb').addEventListener('click', () => watchVideo(vid));
+            el.querySelector('.btn-delete').addEventListener('click', async () => {
+              if (confirm('Remover "' + vid.title + '"?')) {
+                await removeVideo(vid.id);
+                await renderVideos(activeFilter);
+                await renderFilters();
+              }
+            });
+            list.appendChild(el);
+          });
+        }
+      }
+
+      async function renderFilters() {
+        const filters = document.getElementById('filters');
+        const allVids = await getVideos();
+        const subjects = [...new Set(allVids.map(v => v.subject))];
+        filters.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.className = 'filter-btn' + (!activeFilter ? ' active' : '');
+        allBtn.textContent = 'Todos';
+        allBtn.addEventListener('click', async () => { activeFilter = null; await renderVideos(null); await renderFilters(); });
+        filters.appendChild(allBtn);
+        subjects.forEach(sk => {
+          const s = SUBJECTS[sk];
+          const btn = document.createElement('button');
+          btn.className = 'filter-btn' + (activeFilter === sk ? ' active' : '');
+          btn.textContent = s ? s.name : sk;
+          if (s) btn.style.setProperty('--f-color', s.color);
+          btn.addEventListener('click', async () => { activeFilter = sk; await renderVideos(sk); await renderFilters(); });
+          filters.appendChild(btn);
+        });
+      }
+
+      function watchVideo(vid) {
+        currentVideoId = vid.id;
+        const s = SUBJECTS[vid.subject];
+        document.getElementById('watchTitle').textContent = vid.title;
+        const sub = document.getElementById('watchSubject');
+        sub.textContent = s ? s.name : 'Geral';
+        sub.style.color = s ? s.color : '#666';
+        document.getElementById('watchDesc').textContent = vid.description || '';
+        const ytId = getYoutubeId(vid.url);
+        document.getElementById('watchPlayer').innerHTML = ytId
+          ? `<div class="watch-embed"><iframe src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="no-referrer"></iframe></div>`
+          : '<p style="color:var(--text-dim);text-align:center;padding:40px;">Link do YouTube invalido</p>';
+        renderNotes(vid);
+        document.getElementById('watchOverlay').classList.add('show');
+      }
+
+      async function renderNotes(vid) {
+        const list = document.getElementById('notesList');
+        list.innerHTML = '';
+        const notes = vid.notes || [];
+        if (notes.length === 0) {
+          list.innerHTML = '<p class="no-notes">Nenhuma anotacao ainda.</p>';
+          return;
+        }
+        notes.forEach((note, i) => {
+          const el = document.createElement('div');
+          el.className = 'note-item';
+          el.innerHTML = `
+            <div class="note-content">
+              <p>${note.text}</p>
+              <span class="note-date">${formatDate(note.created_at)}</span>
             </div>
-            <div class="video-actions">
-              <button class="btn-icon btn-watch" title="Assistir">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
-              </button>
-              <button class="btn-icon btn-delete" title="Remover">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              </button>
-            </div>
+            <button class="btn-icon btn-delete-note" title="Remover">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           `;
-          el.querySelector('.btn-watch').addEventListener('click', () => watchVideo(vid));
-          el.querySelector('.video-thumb').addEventListener('click', () => watchVideo(vid));
-          el.querySelector('.btn-delete').addEventListener('click', () => {
-            if (confirm('Remover "' + vid.title + '"?')) {
-              removeVideo(vid.id);
-              renderVideos(activeFilter);
-              renderFilters();
-            }
+          el.querySelector('.btn-delete-note').addEventListener('click', async () => {
+            await removeNoteFromVideo(vid.id, i);
+            const allVids = await getVideos();
+            const updated = allVids.find(v => v.id === vid.id);
+            renderNotes(updated);
+            await renderVideos(activeFilter);
           });
           list.appendChild(el);
         });
       }
-    }
 
-    function renderFilters() {
-      const filters = document.getElementById('filters');
-      const vids = getDB('videos');
-      const subjects = [...new Set(vids.map(v => v.subject))];
-      filters.innerHTML = '';
-      const allBtn = document.createElement('button');
-      allBtn.className = 'filter-btn' + (!activeFilter ? ' active' : '');
-      allBtn.textContent = 'Todos';
-      allBtn.addEventListener('click', () => { activeFilter = null; renderVideos(null); renderFilters(); });
-      filters.appendChild(allBtn);
-      subjects.forEach(sk => {
-        const s = SUBJECTS[sk];
-        const btn = document.createElement('button');
-        btn.className = 'filter-btn' + (activeFilter === sk ? ' active' : '');
-        btn.textContent = s ? s.name : sk;
-        if (s) btn.style.setProperty('--f-color', s.color);
-        btn.addEventListener('click', () => { activeFilter = sk; renderVideos(sk); renderFilters(); });
-        filters.appendChild(btn);
-      });
-    }
+      // Modals
+      const overlay = document.getElementById('modalOverlay');
+      document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
+      document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
 
-    function watchVideo(vid) {
-      currentVideoId = vid.id;
-      const s = SUBJECTS[vid.subject];
-      document.getElementById('watchTitle').textContent = vid.title;
-      const sub = document.getElementById('watchSubject');
-      sub.textContent = s ? s.name : 'Geral';
-      sub.style.color = s ? s.color : '#666';
-      document.getElementById('watchDesc').textContent = vid.description || '';
-      const ytId = getYoutubeId(vid.url);
-      document.getElementById('watchPlayer').innerHTML = ytId
-        ? `<div class="watch-embed"><iframe src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="no-referrer"></iframe></div>`
-        : '<p style="color:var(--text-dim);text-align:center;padding:40px;">Link do YouTube invalido</p>';
-      renderNotes(vid);
-      document.getElementById('watchOverlay').classList.add('show');
-    }
-
-    function renderNotes(vid) {
-      const list = document.getElementById('notesList');
-      list.innerHTML = '';
-      const notes = vid.notes || [];
-      if (notes.length === 0) {
-        list.innerHTML = '<p class="no-notes">Nenhuma anotacao ainda.</p>';
-        return;
-      }
-      notes.forEach((note, i) => {
-        const el = document.createElement('div');
-        el.className = 'note-item';
-        el.innerHTML = `
-          <div class="note-content">
-            <p>${note.text}</p>
-            <span class="note-date">${formatDate(note.createdAt)}</span>
-          </div>
-          <button class="btn-icon btn-delete-note" title="Remover">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        `;
-        el.querySelector('.btn-delete-note').addEventListener('click', () => {
-          removeNoteFromVideo(vid.id, i);
-          const updated = getDB('videos').find(v => v.id === vid.id);
-          renderNotes(updated);
-          renderVideos(activeFilter);
-        });
-        list.appendChild(el);
-      });
-    }
-
-    // Modals
-    const overlay = document.getElementById('modalOverlay');
-    document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
-    document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
-
-    document.getElementById('watchClose').addEventListener('click', () => {
-      document.getElementById('watchOverlay').classList.remove('show');
-      document.getElementById('watchPlayer').innerHTML = '';
-      currentVideoId = null;
-    });
-    document.getElementById('watchOverlay').addEventListener('click', e => {
-      if (e.target.id === 'watchOverlay') {
+      document.getElementById('watchClose').addEventListener('click', () => {
         document.getElementById('watchOverlay').classList.remove('show');
         document.getElementById('watchPlayer').innerHTML = '';
         currentVideoId = null;
-      }
-    });
-
-    // Add note
-    document.getElementById('btnAddNote').addEventListener('click', () => {
-      const text = document.getElementById('noteText').value.trim();
-      if (!text || !currentVideoId) return;
-      addNoteToVideo(currentVideoId, text);
-      document.getElementById('noteText').value = '';
-      const vid = getDB('videos').find(v => v.id === currentVideoId);
-      renderNotes(vid);
-      renderVideos(activeFilter);
-    });
-
-    document.getElementById('noteText').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        document.getElementById('btnAddNote').click();
-      }
-    });
-
-    // Submit form
-    document.getElementById('vidForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const url = document.getElementById('vidUrl').value.trim();
-      if (!getYoutubeId(url)) {
-        alert('Por favor, insira um link valido do YouTube.');
-        return;
-      }
-      addVideo({
-        title: document.getElementById('vidTitle').value,
-        subject: document.getElementById('vidSubject').value,
-        url: url,
-        description: document.getElementById('vidDesc').value
       });
-      overlay.classList.remove('show');
-      this.reset();
-      renderVideos(activeFilter);
-      renderFilters();
-    });
+      document.getElementById('watchOverlay').addEventListener('click', e => {
+        if (e.target.id === 'watchOverlay') {
+          document.getElementById('watchOverlay').classList.remove('show');
+          document.getElementById('watchPlayer').innerHTML = '';
+          currentVideoId = null;
+        }
+      });
 
-    renderVideos(null);
-    renderFilters();
+      // Add note
+      document.getElementById('btnAddNote').addEventListener('click', async () => {
+        const text = document.getElementById('noteText').value.trim();
+        if (!text || !currentVideoId) return;
+        await addNoteToVideo(currentVideoId, text);
+        document.getElementById('noteText').value = '';
+        const allVids = await getVideos();
+        const vid = allVids.find(v => v.id === currentVideoId);
+        renderNotes(vid);
+        await renderVideos(activeFilter);
+      });
+
+      document.getElementById('noteText').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          document.getElementById('btnAddNote').click();
+        }
+      });
+
+      // Submit form
+      document.getElementById('vidForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const url = document.getElementById('vidUrl').value.trim();
+        if (!getYoutubeId(url)) {
+          alert('Por favor, insira um link valido do YouTube.');
+          return;
+        }
+        await addVideo({
+          title: document.getElementById('vidTitle').value,
+          subject: document.getElementById('vidSubject').value,
+          url: url,
+          description: document.getElementById('vidDesc').value
+        });
+        overlay.classList.remove('show');
+        this.reset();
+        await renderVideos(activeFilter);
+        await renderFilters();
+      });
+
+      await renderVideos(null);
+      await renderFilters();
+    })();
   </script>
   <script src="shared.js"></script>
 </body>

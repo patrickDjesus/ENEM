@@ -137,212 +137,199 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="database.js"></script>
   <script>
-    const SUPABASE_URL = 'https://pymtagngzrzupbvbarrl.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_zapw9ov_DxM2BnJU5wG58A_Y8eVZphO';
-    const BUCKET = 'documents';
-
-    let supabase;
-    try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      console.error('Supabase init error:', e);
-    }
-
-    const select = document.getElementById('docSubject');
-    Object.keys(SUBJECTS).forEach(k => {
-      const o = document.createElement('option');
-      o.value = k;
-      o.textContent = SUBJECTS[k].name;
-      select.appendChild(o);
-    });
-
-    let activeFilter = null;
-
-    function renderDocs(filter) {
-      activeFilter = filter || null;
-      const docs = getDB('documents').filter(d => !activeFilter || d.subject === activeFilter);
-      const list = document.getElementById('docList');
-      const empty = document.getElementById('emptyState');
-      list.innerHTML = '';
-      if (docs.length === 0) {
-        empty.style.display = 'flex';
-      } else {
-        empty.style.display = 'none';
-        docs.forEach(doc => {
-          const s = SUBJECTS[doc.subject];
-          const el = document.createElement('div');
-          el.className = 'doc-card';
-          el.style.setProperty('--subject-color', s ? s.color : '#666');
-          el.innerHTML = `
-            <div class="doc-left">
-              <div class="doc-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-              </div>
-              <div class="doc-info">
-                <h3>${doc.title}</h3>
-                <div class="doc-meta">
-                  <span class="doc-subject" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
-                  <span class="doc-date">${formatDate(doc.createdAt)}</span>
-                </div>
-                ${doc.description ? `<p class="doc-desc">${doc.description}</p>` : ''}
-              </div>
-            </div>
-            <div class="doc-actions">
-              <button class="btn-icon btn-view" title="Visualizar">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-              <button class="btn-icon btn-delete" title="Remover">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              </button>
-            </div>
-          `;
-          el.querySelector('.btn-view').addEventListener('click', () => viewDoc(doc));
-          el.querySelector('.btn-delete').addEventListener('click', async () => {
-            if (confirm('Remover "' + doc.title + '"?')) {
-              if (doc.filePath && supabase) {
-                await supabase.storage.from(BUCKET).remove([doc.filePath]);
-              }
-              removeDocument(doc.id);
-              renderDocs(activeFilter);
-              renderFilters();
-            }
-          });
-          list.appendChild(el);
-        });
-      }
-    }
-
-    function renderFilters() {
-      const filters = document.getElementById('filters');
-      const docs = getDB('documents');
-      const subjects = [...new Set(docs.map(d => d.subject))];
-      filters.innerHTML = '';
-      const allBtn = document.createElement('button');
-      allBtn.className = 'filter-btn' + (!activeFilter ? ' active' : '');
-      allBtn.textContent = 'Todos';
-      allBtn.addEventListener('click', () => { activeFilter = null; renderDocs(null); renderFilters(); });
-      filters.appendChild(allBtn);
-      subjects.forEach(sk => {
-        const s = SUBJECTS[sk];
-        const btn = document.createElement('button');
-        btn.className = 'filter-btn' + (activeFilter === sk ? ' active' : '');
-        btn.textContent = s ? s.name : sk;
-        if (s) btn.style.setProperty('--f-color', s.color);
-        btn.addEventListener('click', () => { activeFilter = sk; renderDocs(sk); renderFilters(); });
-        filters.appendChild(btn);
+    (async function() {
+      const select = document.getElementById('docSubject');
+      Object.keys(SUBJECTS).forEach(k => {
+        const o = document.createElement('option');
+        o.value = k;
+        o.textContent = SUBJECTS[k].name;
+        select.appendChild(o);
       });
-    }
 
-    function viewDoc(doc) {
-      const s = SUBJECTS[doc.subject];
-      document.getElementById('pdfTitle').textContent = doc.title;
-      const sub = document.getElementById('pdfSubject');
-      sub.textContent = s ? s.name : 'Geral';
-      sub.style.color = s ? s.color : '#666';
-      document.getElementById('pdfFrame').src = doc.fileUrl || doc.fileData || '';
-      document.querySelector('.main').classList.add('hidden');
-      document.getElementById('pdfViewer').classList.add('active');
-    }
+      let activeFilter = null;
 
-    // PDF Viewer close
-    document.getElementById('pdfBack').addEventListener('click', closePdfViewer);
-    function closePdfViewer() {
-      document.getElementById('pdfViewer').classList.remove('active');
-      document.querySelector('.main').classList.remove('hidden');
-      document.getElementById('pdfFrame').src = '';
-    }
-
-    document.getElementById('btnOpenExternal').addEventListener('click', () => {
-      const src = document.getElementById('pdfFrame').src;
-      if (src) window.open(src, '_blank');
-    });
-
-    // Add modal
-    const overlay = document.getElementById('modalOverlay');
-    document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
-    document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
-
-    // File input
-    const fileInput = document.getElementById('docFile');
-    const fileInputBox = document.getElementById('fileInput');
-    fileInputBox.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files.length) {
-        document.getElementById('fileLabel').textContent = fileInput.files[0].name;
-      }
-    });
-
-    // Submit
-    document.getElementById('docForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const file = fileInput.files[0];
-      if (!file) return;
-
-      const MAX_SIZE = 4 * 1024 * 1024;
-      if (file.size > MAX_SIZE && !supabase) {
-        alert('Arquivo muito grande para armazenamento local (max 4MB). O Supabase esta indisponivel.');
-        btnSubmit.disabled = false;
-        btnText.textContent = 'Salvar Documento';
-        return;
-      }
-
-      const btnSubmit = document.getElementById('btnSubmit');
-      const btnText = document.getElementById('btnSubmitText');
-      btnSubmit.disabled = true;
-      btnText.textContent = 'Enviando...';
-
-      try {
-        let fileUrl = '';
-        let filePath = '';
-
-        if (supabase) {
-          filePath = `pdfs/${Date.now()}_${file.name}`;
-          const { data, error } = await supabase.storage
-            .from(BUCKET)
-            .upload(filePath, file, { contentType: 'application/pdf' });
-
-          if (error) throw error;
-
-          const { data: urlData } = supabase.storage
-            .from(BUCKET)
-            .getPublicUrl(filePath);
-
-          fileUrl = urlData.publicUrl;
+      async function renderDocs(filter) {
+        activeFilter = filter || null;
+        const allDocs = await getDocuments();
+        const docs = allDocs.filter(d => !activeFilter || d.subject === activeFilter);
+        const list = document.getElementById('docList');
+        const empty = document.getElementById('emptyState');
+        list.innerHTML = '';
+        if (docs.length === 0) {
+          empty.style.display = 'flex';
         } else {
-          fileUrl = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(file);
+          empty.style.display = 'none';
+          docs.forEach(doc => {
+            const s = SUBJECTS[doc.subject];
+            const el = document.createElement('div');
+            el.className = 'doc-card';
+            el.style.setProperty('--subject-color', s ? s.color : '#666');
+            el.innerHTML = `
+              <div class="doc-left">
+                <div class="doc-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                </div>
+                <div class="doc-info">
+                  <h3>${doc.title}</h3>
+                  <div class="doc-meta">
+                    <span class="doc-subject" style="background:${s ? s.colorLight : '#1e1e1e'};color:${s ? s.color : '#666'}">${s ? s.name : 'Geral'}</span>
+                    <span class="doc-date">${formatDate(doc.created_at)}</span>
+                  </div>
+                  ${doc.description ? `<p class="doc-desc">${doc.description}</p>` : ''}
+                </div>
+              </div>
+              <div class="doc-actions">
+                <button class="btn-icon btn-view" title="Visualizar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="btn-icon btn-delete" title="Remover">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            `;
+            el.querySelector('.btn-view').addEventListener('click', () => viewDoc(doc));
+            el.querySelector('.btn-delete').addEventListener('click', async () => {
+              if (confirm('Remover "' + doc.title + '"?')) {
+                await removeDocument(doc.id);
+                await renderDocs(activeFilter);
+                await renderFilters();
+              }
+            });
+            list.appendChild(el);
           });
         }
-
-        addDocument({
-          title: document.getElementById('docTitle').value,
-          subject: document.getElementById('docSubject').value,
-          description: document.getElementById('docDesc').value,
-          fileName: file.name,
-          fileSize: (file.size / 1024 / 1024).toFixed(2) + ' MB',
-          fileUrl: fileUrl,
-          filePath: filePath
-        });
-
-        overlay.classList.remove('show');
-        this.reset();
-        document.getElementById('fileLabel').textContent = 'Clique para selecionar o PDF';
-        renderDocs(activeFilter);
-        renderFilters();
-      } catch(err) {
-        console.error('Upload error:', err);
-        alert('Erro ao enviar arquivo: ' + err.message);
-      } finally {
-        btnSubmit.disabled = false;
-        btnText.textContent = 'Salvar Documento';
       }
-    });
 
-    renderDocs(null);
-    renderFilters();
+      async function renderFilters() {
+        const filters = document.getElementById('filters');
+        const allDocs = await getDocuments();
+        const subjects = [...new Set(allDocs.map(d => d.subject))];
+        filters.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.className = 'filter-btn' + (!activeFilter ? ' active' : '');
+        allBtn.textContent = 'Todos';
+        allBtn.addEventListener('click', async () => { activeFilter = null; await renderDocs(null); await renderFilters(); });
+        filters.appendChild(allBtn);
+        subjects.forEach(sk => {
+          const s = SUBJECTS[sk];
+          const btn = document.createElement('button');
+          btn.className = 'filter-btn' + (activeFilter === sk ? ' active' : '');
+          btn.textContent = s ? s.name : sk;
+          if (s) btn.style.setProperty('--f-color', s.color);
+          btn.addEventListener('click', async () => { activeFilter = sk; await renderDocs(sk); await renderFilters(); });
+          filters.appendChild(btn);
+        });
+      }
+
+      function viewDoc(doc) {
+        const s = SUBJECTS[doc.subject];
+        document.getElementById('pdfTitle').textContent = doc.title;
+        const sub = document.getElementById('pdfSubject');
+        sub.textContent = s ? s.name : 'Geral';
+        sub.style.color = s ? s.color : '#666';
+        document.getElementById('pdfFrame').src = doc.file_url || doc.file_data || doc.fileUrl || doc.fileData || '';
+        document.querySelector('.main').classList.add('hidden');
+        document.getElementById('pdfViewer').classList.add('active');
+      }
+
+      // PDF Viewer close
+      document.getElementById('pdfBack').addEventListener('click', closePdfViewer);
+      function closePdfViewer() {
+        document.getElementById('pdfViewer').classList.remove('active');
+        document.querySelector('.main').classList.remove('hidden');
+        document.getElementById('pdfFrame').src = '';
+      }
+
+      document.getElementById('btnOpenExternal').addEventListener('click', () => {
+        const src = document.getElementById('pdfFrame').src;
+        if (src) window.open(src, '_blank');
+      });
+
+      // Add modal
+      const overlay = document.getElementById('modalOverlay');
+      document.getElementById('btnAdd').addEventListener('click', () => overlay.classList.add('show'));
+      document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('show'));
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+
+      // File input
+      const fileInput = document.getElementById('docFile');
+      const fileInputBox = document.getElementById('fileInput');
+      fileInputBox.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+          document.getElementById('fileLabel').textContent = fileInput.files[0].name;
+        }
+      });
+
+      // Submit
+      document.getElementById('docForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const MAX_SIZE = 4 * 1024 * 1024;
+        if (file.size > MAX_SIZE && !supabase) {
+          alert('Arquivo muito grande para armazenamento local (max 4MB). O Supabase esta indisponivel.');
+          return;
+        }
+
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnText = document.getElementById('btnSubmitText');
+        btnSubmit.disabled = true;
+        btnText.textContent = 'Enviando...';
+
+        try {
+          let file_url = '';
+          let file_path = '';
+
+          if (supabase) {
+            file_path = `pdfs/${Date.now()}_${file.name}`;
+            const { data, error } = await supabase.storage
+              .from(BUCKET)
+              .upload(file_path, file, { contentType: 'application/pdf' });
+
+            if (error) throw error;
+
+            const { data: urlData } = supabase.storage
+              .from(BUCKET)
+              .getPublicUrl(file_path);
+
+            file_url = urlData.publicUrl;
+          } else {
+            file_url = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.readAsDataURL(file);
+            });
+          }
+
+          await addDocument({
+            title: document.getElementById('docTitle').value,
+            subject: document.getElementById('docSubject').value,
+            description: document.getElementById('docDesc').value,
+            file_name: file.name,
+            file_size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+            file_url: file_url,
+            file_path: file_path
+          });
+
+          overlay.classList.remove('show');
+          this.reset();
+          document.getElementById('fileLabel').textContent = 'Clique para selecionar o PDF';
+          await renderDocs(activeFilter);
+          await renderFilters();
+        } catch(err) {
+          console.error('Upload error:', err);
+          alert('Erro ao enviar arquivo: ' + err.message);
+        } finally {
+          btnSubmit.disabled = false;
+          btnText.textContent = 'Salvar Documento';
+        }
+      });
+
+      await renderDocs(null);
+      await renderFilters();
+    })();
   </script>
   <script src="shared.js"></script>
 </body>
