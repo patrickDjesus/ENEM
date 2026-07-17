@@ -267,6 +267,7 @@ async function addVideo(video) {
         title: video.title,
         url: video.url,
         subject: video.subject,
+        description: video.description || '',
         notes: video.notes,
         user_id: video.user_id,
         created_at: video.created_at
