@@ -817,6 +817,12 @@ body {
   color: var(--text-primary);
 }
 
+.note-toolbar-btn.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
 .note-editor {
   min-height: 60px;
   max-height: 200px;

@@ -226,11 +226,13 @@ body {
   justify-content: center;
   padding: 12px;
   gap: 0;
+  width: 100%;
+  min-height: 44px;
 }
 
 .sidebar.collapsed .nav-item svg {
-  width: 22px;
-  height: 22px;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 .sidebar.collapsed .nav-item::after {

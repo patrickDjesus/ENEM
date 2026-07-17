@@ -193,7 +193,6 @@
         document.querySelector('.main').style.marginLeft = '';
         document.getElementById('watchPlayer').innerHTML = '';
         currentVideoId = null;
-        if (window.disableFocusMode) window.disableFocusMode();
       }
 
       function showWatchView() {
@@ -201,7 +200,6 @@
         watchView.classList.remove('hidden');
         document.querySelector('.sidebar').style.display = 'none';
         document.querySelector('.main').style.marginLeft = '0';
-        if (window.enableFocusMode) window.enableFocusMode();
       }
 
       async function renderVideos(filter) {
@@ -429,6 +427,17 @@
       }
 
       // Toolbar buttons
+      function updateToolbarState() {
+        document.querySelectorAll('.note-toolbar-btn').forEach(btn => {
+          const cmd = btn.dataset.command;
+          if (cmd === 'bold') {
+            btn.classList.toggle('active', document.queryCommandState('bold'));
+          } else if (cmd === 'italic') {
+            btn.classList.toggle('active', document.queryCommandState('italic'));
+          }
+        });
+      }
+
       document.querySelectorAll('.note-toolbar-btn').forEach(btn => {
         btn.addEventListener('mousedown', e => e.preventDefault());
         btn.addEventListener('click', () => {
@@ -439,8 +448,12 @@
             document.execCommand(cmd, false, null);
           }
           document.getElementById('noteText').focus();
+          updateToolbarState();
         });
       });
+
+      document.getElementById('noteText').addEventListener('keyup', updateToolbarState);
+      document.getElementById('noteText').addEventListener('mouseup', updateToolbarState);
 
       document.getElementById('btnBack').addEventListener('click', showListView);
 
