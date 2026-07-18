@@ -34,7 +34,7 @@
     <div id="emptyState" class="empty-state">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <p>Nenhum simulado criado ainda.</p>
-      <p>Clique em "Novo Simulado" para comecar.</p>
+      <p>Clique em "Novo Simulado" para começar.</p>
     </div>
   </main>
 
@@ -47,7 +47,7 @@
       </div>
 
       <div class="form-group">
-        <label for="simTitle">Titulo do Simulado</label>
+        <label for="simTitle">Título do Simulado</label>
         <input type="text" id="simTitle" placeholder="Ex: Simulado ENEM 2024" value="Simulado ENEM">
       </div>
 
@@ -67,7 +67,7 @@
       <div class="sim-quiz-select" id="quizSelectList"></div>
 
       <div class="sim-area-dist" id="areaDist" style="display:none;">
-        <h4>Distribuicao por Area</h4>
+        <h4>Distribuição por Área</h4>
         <div class="sim-area-dist-grid" id="areaDistGrid"></div>
       </div>
 
@@ -101,13 +101,13 @@
     <div class="sim-question-area" id="questionArea"></div>
 
     <div class="sim-map" id="simMap">
-      <div class="sim-map-label">Mapa de Questoes</div>
+      <div class="sim-map-label">Mapa de Questões</div>
       <div class="sim-map-grid" id="mapGrid"></div>
     </div>
 
-    <div class="sim-nav">
+    <div class="sim-nav" id="simNav">
       <button class="sim-nav-btn" id="btnPrev" disabled>Anterior</button>
-      <button class="sim-nav-btn" id="btnNext">Proxima</button>
+      <button class="sim-nav-btn" id="btnNext">Próxima</button>
     </div>
   </div>
 
@@ -200,7 +200,7 @@
             showConfirm('Excluir este simulado?', async () => {
               await removeSimulado(parseInt(btn.dataset.id));
               await renderSimList();
-              showToast('Simulado excluido', 'success');
+              showToast('Simulado excluído', 'success');
             });
           });
         });
@@ -228,7 +228,7 @@
         const list = document.getElementById('quizSelectList');
         list.innerHTML = '';
         if (allQuizzes.length === 0) {
-          list.innerHTML = '<p style="font-size:13px;color:var(--text-dim);text-align:center;padding:16px;">Nenhum quiz disponivel. Crie quizzes primeiro.</p>';
+          list.innerHTML = '<p style="font-size:13px;color:var(--text-dim);text-align:center;padding:16px;">Nenhum quiz disponível. Crie quizzes primeiro.</p>';
           return;
         }
         allQuizzes.forEach(q => {
@@ -242,7 +242,7 @@
               <div class="sim-quiz-option-meta">
                 <span>${SUBJECTS[q.subject] ? SUBJECTS[q.subject].name : q.subject}</span>
                 <span>${q.difficulty || 'medio'}</span>
-                <span>${qCount} questoes</span>
+                <span>${qCount} questões</span>
               </div>
             </div>`;
           const cb = opt.querySelector('input');
@@ -327,7 +327,7 @@
           }
         });
 
-        if (allQs.length === 0) { showToast('Nenhuma questao encontrada nos quizzes selecionados', 'error'); return; }
+        if (allQs.length === 0) { showToast('Nenhuma questão encontrada nos quizzes selecionados', 'error'); return; }
 
         const sim = {
           user_id: user ? user.id : null,
@@ -378,14 +378,13 @@
         const total = sim.questions ? sim.questions.length : 0;
         let score = 0;
         const areaScores = {};
-        for (const [idx, ans] of Object.entries(answers)) {
-          const q = sim.questions[parseInt(idx)];
-          if (!q) continue;
+        sim.questions.forEach((q, idx) => {
+          const ans = answers[idx];
           const area = q._area;
           if (!areaScores[area]) areaScores[area] = { score: 0, total: 0 };
           areaScores[area].total++;
-          if (ans.isCorrect) { score++; areaScores[area].score++; }
-        }
+          if (ans && ans.isCorrect) { score++; areaScores[area].score++; }
+        });
         for (const a of Object.values(areaScores)) a.pct = a.total > 0 ? Math.round(a.score / a.total * 100) : 0;
         saveSimuladoResult(sim.id, answers, score, total, areaScores, sim.time_limit);
         currentSim = { ...sim, answers, score, total, pct: total > 0 ? Math.round(score / total * 100) : 0, area_scores: areaScores, time_spent: sim.time_limit, status: 'completed' };
@@ -454,7 +453,7 @@
       function renderCurrentQuestion() {
         const area = document.getElementById('questionArea');
         const q = questions[currentIdx];
-        if (!q) { area.innerHTML = '<p style="text-align:center;color:var(--text-dim);">Nenhuma questao nesta area.</p>'; return; }
+        if (!q) { area.innerHTML = '<p style="text-align:center;color:var(--text-dim);">Nenhuma questão nesta área.</p>'; return; }
 
         const vis = getVisibleIndices();
         const displayNum = vis.indexOf(currentIdx) + 1;
@@ -519,7 +518,7 @@
             verifyBtn.addEventListener('click', () => {
               const text = document.getElementById('writtenInput').value.trim();
               if (!text) return;
-              showConfirm('Voce acertou esta questao?', () => {
+              showConfirm('Você acertou esta questão?', () => {
                 currentSim.answers[currentIdx] = { text, isCorrect: true, type: 'written' };
                 saveSimuladoProgress(currentSim.id, currentSim.answers, timerSeconds);
                 renderCurrentQuestion();
@@ -613,7 +612,7 @@
         const answeredCount = Object.keys(currentSim.answers).length;
         const pending = total - answeredCount;
         let msg = 'Finalizar simulado?';
-        if (pending > 0) msg += `<br><span style="font-size:13px;color:var(--text-dim)">${pending} questao(oes) sem resposta.</span>`;
+        if (pending > 0) msg += `<br><span style="font-size:13px;color:var(--text-dim)">${pending} questão(ões) sem resposta.</span>`;
         showConfirm(msg, () => finishSim());
       });
 
@@ -729,11 +728,11 @@
             ${reviewHtml ? `
               <div class="sim-review-section">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                  <div class="sim-review-title" style="margin-bottom:0;">Revisao dos Erros</div>
+                  <div class="sim-review-title" style="margin-bottom:0;">Revisão dos Erros</div>
                   <button class="btn-export-review" id="btnExportReview">Exportar</button>
                 </div>
                 ${reviewHtml}
-              </div>` : '<p style="text-align:center;color:var(--text-dim);font-size:14px;">Nenhum erro! Parabens!</p>'}
+              </div>` : '<p style="text-align:center;color:var(--text-dim);font-size:14px;">Nenhum erro! Parabéns!</p>'}
             <button class="sim-nav-btn" id="btnCloseResult" style="margin:20px auto;display:block;">Voltar</button>
           </div>`;
 
@@ -751,7 +750,7 @@
         const exportBtn = document.getElementById('btnExportReview');
         if (exportBtn) {
           exportBtn.addEventListener('click', () => {
-            let txt = 'REVISAO - ' + sim.title + '\n';
+            let txt = 'REVISÃO - ' + sim.title + '\n';
             txt += '='.repeat(50) + '\n\n';
             txt += 'Resultado: ' + sim.score + '/' + sim.total + ' (' + pct + '%)\n';
             txt += 'Tempo: ' + timeStr + '\n\n';
@@ -773,7 +772,7 @@
             a.download = 'revisao_simulado_' + (sim.title || '').replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
             a.click();
             URL.revokeObjectURL(a.href);
-            showToast('Revisao exportada!', 'success');
+            showToast('Revisão exportada!', 'success');
           });
         }
       }

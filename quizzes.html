@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -54,11 +54,11 @@
       <form id="quizForm">
         <div class="form-row">
           <div class="form-group" style="flex:2">
-            <label for="quizTitle">Titulo do Quiz *</label>
+            <label for="quizTitle">Título do Quiz *</label>
             <input type="text" id="quizTitle" placeholder="Ex: Era Vargas" required>
           </div>
           <div class="form-group" style="flex:1">
-            <label for="quizSubject">Materia *</label>
+            <label for="quizSubject">Matéria *</label>
             <select id="quizSubject" required>
               <option value="">Selecione</option>
             </select>
@@ -66,23 +66,23 @@
           <div class="form-group" style="flex:1">
             <label for="quizDifficulty">Dificuldade</label>
             <select id="quizDifficulty">
-              <option value="facil">Facil</option>
-              <option value="medio" selected>Medio</option>
-              <option value="dificil">Dificil</option>
+              <option value="facil">Fácil</option>
+              <option value="medio" selected>Médio</option>
+              <option value="dificil">Difícil</option>
             </select>
           </div>
         </div>
 
         <div class="questions-builder">
           <div class="questions-header">
-            <h3>Questoes</h3>
-            <span class="question-count" id="questionCount">0 questoes</span>
+            <h3>Questões</h3>
+            <span class="question-count" id="questionCount">0 questões</span>
           </div>
           <div id="questionsList"></div>
           <div class="add-question-row">
             <button type="button" class="btn-add-question" id="btnAddMc">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Multipla Escolha
+              Múltipla Escolha
             </button>
             <button type="button" class="btn-add-question btn-add-written" id="btnAddWritten">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -205,8 +205,8 @@
                   <h3>${escapeHtml(q.title)}</h3>
                   <div class="quiz-meta">
                     <span class="quiz-subject-tag">${s ? s.name : 'Geral'}</span>
-                    <span class="quiz-difficulty-tag diff-${q.difficulty || 'medio'}">${q.difficulty === 'facil' ? 'Facil' : q.difficulty === 'dificil' ? 'Dificil' : 'Medio'}</span>
-                    <span class="quiz-count">${q.questions.length} questoes</span>
+                    <span class="quiz-difficulty-tag diff-${q.difficulty || 'medio'}">${q.difficulty === 'facil' ? 'Fácil' : q.difficulty === 'dificil' ? 'Difícil' : 'Médio'}</span>
+                    <span class="quiz-count">${q.questions.length} questões</span>
                     <span class="quiz-date">${formatDate(q.created_at)}</span>
                     <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
                   </div>
@@ -264,7 +264,7 @@
         const sep = document.createElement('span');
         sep.style.cssText = 'width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;';
         filters.appendChild(sep);
-        const diffLabels = { facil: 'Facil', medio: 'Medio', dificil: 'Dificil' };
+        const diffLabels = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil' };
         ['facil', 'medio', 'dificil'].forEach(d => {
           const btn = document.createElement('button');
           btn.className = 'filter-btn diff-filter-btn' + (activeDifficulty === d ? ' active' : '');
@@ -277,7 +277,7 @@
 
       function updateCount() {
         const count = document.querySelectorAll('.question-item').length;
-        document.getElementById('questionCount').textContent = count + ' questao(oes)';
+        document.getElementById('questionCount').textContent = count + ' questão(ões)';
       }
 
       function addMcQuestion() {
@@ -289,7 +289,7 @@
         el.dataset.type = 'mc';
         el.innerHTML = `
           <div class="question-header">
-            <span class="question-number">Questao ${qNum} <span class="q-type-badge">Multipla Escolha</span></span>
+            <span class="question-number">Questão ${qNum} <span class="q-type-badge">Múltipla Escolha</span></span>
             <button type="button" class="btn-remove-question" title="Remover">&times;</button>
           </div>
           <div class="form-group">
@@ -304,7 +304,7 @@
             <label class="q-option"><input type="radio" name="correct_${qNum}" value="2"><span class="option-letter">C</span><input type="text" class="option-input" placeholder="Alternativa C" required></label>
             <label class="q-option"><input type="radio" name="correct_${qNum}" value="3"><span class="option-letter">D</span><input type="text" class="option-input" placeholder="Alternativa D" required></label>
           </div>
-          <p class="q-hint">Marque o botao ao lado da alternativa correta</p>
+          <p class="q-hint">Marque o botão ao lado da alternativa correta</p>
         `;
         el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
         container.appendChild(el);
@@ -320,7 +320,7 @@
         el.dataset.type = 'written';
         el.innerHTML = `
           <div class="question-header">
-            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-written">Resposta Escrita</span></span>
+            <span class="question-number">Questão ${qNum} <span class="q-type-badge badge-written">Resposta Escrita</span></span>
             <button type="button" class="btn-remove-question" title="Remover">&times;</button>
           </div>
           <div class="form-group">
@@ -332,10 +332,10 @@
           <div class="form-group" style="margin-top:12px">
             <label>Resposta correta (modelo)</label>
             <div class="textarea-wrapper">
-              <textarea class="q-answer-key" rows="3" placeholder="Digite a resposta esperada para comparacao..." required></textarea>
+              <textarea class="q-answer-key" rows="3" placeholder="Digite a resposta esperada para comparação..." required></textarea>
             </div>
           </div>
-          <p class="q-hint">Ao responder, o usuario vera sua resposta ao lado da resposta modelo para comparar.</p>
+          <p class="q-hint">Ao responder, o usuário verá sua resposta ao lado da resposta modelo para comparar.</p>
         `;
         el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
         container.appendChild(el);
@@ -351,7 +351,7 @@
         el.dataset.type = 'truefalse';
         el.innerHTML = `
           <div class="question-header">
-            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-tf">Verdadeiro / Falso</span></span>
+            <span class="question-number">Questão ${qNum} <span class="q-type-badge badge-tf">Verdadeiro / Falso</span></span>
             <button type="button" class="btn-remove-question" title="Remover">&times;</button>
           </div>
           <div class="form-group">
@@ -364,7 +364,7 @@
             <label class="q-option"><input type="radio" name="tf_${qNum}" value="true" required><span class="option-letter" style="background:rgba(0,184,148,0.1);color:#00b894">V</span><span class="option-text">Verdadeiro</span></label>
             <label class="q-option"><input type="radio" name="tf_${qNum}" value="false"><span class="option-letter" style="background:rgba(225,112,85,0.1);color:#e17055">F</span><span class="option-text">Falso</span></label>
           </div>
-          <p class="q-hint">Marque se a afirmacao e verdadeira ou falsa. Pontuacao Cebraspe: +1 acerto, -1 erro.</p>
+          <p class="q-hint">Marque se a afirmação é verdadeira ou falsa. Pontuacao Cebraspe: +1 acerto, -1 erro.</p>
         `;
         el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
         container.appendChild(el);
@@ -380,7 +380,7 @@
         el.dataset.type = 'fillblank';
         el.innerHTML = `
           <div class="question-header">
-            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-fill">Preencher Lacuna</span></span>
+            <span class="question-number">Questão ${qNum} <span class="q-type-badge badge-fill">Preencher Lacuna</span></span>
             <button type="button" class="btn-remove-question" title="Remover">&times;</button>
           </div>
           <div class="form-group">
@@ -393,7 +393,7 @@
             <label>Resposta correta</label>
             <input type="text" class="q-fill-answer" placeholder="Ex: Jupiter" required>
           </div>
-          <p class="q-hint">Use tres underscores (___) no texto para indicar onde o aluno deve preencher.</p>
+          <p class="q-hint">Use três underscores (___) no texto para indicar onde o aluno deve preencher.</p>
         `;
         el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
         container.appendChild(el);
@@ -409,13 +409,13 @@
         el.dataset.type = 'ordering';
         el.innerHTML = `
           <div class="question-header">
-            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-order">Ordenar Itens</span></span>
+            <span class="question-number">Questão ${qNum} <span class="q-type-badge badge-order">Ordenar Itens</span></span>
             <button type="button" class="btn-remove-question" title="Remover">&times;</button>
           </div>
           <div class="form-group">
             <label>Instrucao</label>
             <div class="textarea-wrapper">
-              <textarea class="q-text" rows="2" placeholder="Ex: Coloque os eventos em ordem cronologica." required></textarea>
+              <textarea class="q-text" rows="2" placeholder="Ex: Coloque os eventos em ordem cronológica." required></textarea>
             </div>
           </div>
           <div class="form-group">
@@ -423,7 +423,7 @@
             <div class="order-items-list" data-qnum="${qNum}"></div>
             <button type="button" class="btn-add-order-item" data-qnum="${qNum}">+ Adicionar Item</button>
           </div>
-          <p class="q-hint">Adicione os itens na ordem correta. Eles serao embaralhados durante o quiz.</p>
+          <p class="q-hint">Adicione os itens na ordem correta. Eles serão embaralhados durante o quiz.</p>
         `;
         el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
         container.appendChild(el);
@@ -458,13 +458,13 @@
         el.dataset.type = 'matching';
         el.innerHTML = `
           <div class="question-header">
-            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-match">Conectar Pares</span></span>
+            <span class="question-number">Questão ${qNum} <span class="q-type-badge badge-match">Conectar Pares</span></span>
             <button type="button" class="btn-remove-question" title="Remover">&times;</button>
           </div>
           <div class="form-group">
             <label>Instrucao</label>
             <div class="textarea-wrapper">
-              <textarea class="q-text" rows="2" placeholder="Ex: Conecte cada conceito com sua definicao." required></textarea>
+              <textarea class="q-text" rows="2" placeholder="Ex: Conecte cada conceito com sua definição." required></textarea>
             </div>
           </div>
           <div class="form-group">
@@ -472,7 +472,7 @@
             <div class="match-pairs-list" data-qnum="${qNum}"></div>
             <button type="button" class="btn-add-match-pair" data-qnum="${qNum}">+ Adicionar Par</button>
           </div>
-          <p class="q-hint">Cada linha define um par correto. Durante o quiz, os itens da direita serao embaralhados.</p>
+          <p class="q-hint">Cada linha define um par correto. Durante o quiz, os itens da direita serão embaralhados.</p>
         `;
         el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
         container.appendChild(el);
@@ -509,7 +509,7 @@
       document.getElementById('quizForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const items = document.querySelectorAll('.question-item');
-        if (items.length === 0) { alert('Adicione pelo menos uma questao.'); return; }
+        if (items.length === 0) { alert('Adicione pelo menos uma questão.'); return; }
         const questions = [];
         for (const item of items) {
           const text = item.querySelector('.q-text').value.trim();
@@ -657,7 +657,7 @@
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-written">Escrita</span></div>
+              <div class="play-counter">Questão ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-written">Escrita</span></div>
               <p class="play-question">${escapeHtml(q.text)}</p>
               <textarea id="writtenAnswer" class="written-input" rows="4" placeholder="Digite sua resposta aqui...">${escapeHtml(savedDraft)}</textarea>
               <button class="btn-submit" id="btnCheckWritten" style="margin-top:12px">Verificar Resposta</button>
@@ -701,7 +701,7 @@
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-tf">V/F</span></div>
+              <div class="play-counter">Questão ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-tf">V/F</span></div>
               <p class="play-question">${escapeHtml(q.text)}</p>
               <div class="play-options play-tf-options">
                 <button class="play-option play-tf-btn play-tf-true" data-value="true">
@@ -761,7 +761,7 @@
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-fill">Lacuna</span></div>
+              <div class="play-counter">Questão ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-fill">Lacuna</span></div>
               <p class="play-question">${escapeHtml(q.text).replace(/___/g, '<span class="fill-blank-marker">___</span>')}</p>
               <div class="fill-input-wrapper">
                 <label class="fill-label">Sua resposta:</label>
@@ -805,7 +805,7 @@
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-order">Ordenacao</span></div>
+              <div class="play-counter">Questão ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-order">Ordenacao</span></div>
               <p class="play-question">${escapeHtml(q.text)}</p>
               <p class="play-hint">Arraste os itens ou use os botoes para colocar na ordem correta.</p>
               <div class="order-play-list" id="orderPlayList"></div>
@@ -899,7 +899,7 @@
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-match">Conexao</span></div>
+              <div class="play-counter">Questão ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-match">Conexao</span></div>
               <p class="play-question">${escapeHtml(q.text)}</p>
               <p class="play-hint">Clique em um item da esquerda, depois no par correspondente da direita.</p>
               <div class="match-play-grid" id="matchPlayGrid"></div>
@@ -1003,7 +1003,7 @@
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
-              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span style="font-size:11px;color:var(--text-ghost)">(Use setas/teclado ou clique)</span></div>
+              <div class="play-counter">Questão ${current + 1} de ${shuffled.length} <span style="font-size:11px;color:var(--text-ghost)">(Use setas/teclado ou clique)</span></div>
               <p class="play-question">${escapeHtml(q.text)}</p>
               <div class="play-options" id="playOptions">
                 ${q.options.map((opt, i) => `
@@ -1109,7 +1109,7 @@
               ${wrongAnswers.length > 0 ? `
                 <div style="text-align:left;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                    <h3 style="font-size:15px;font-weight:700;color:var(--text-secondary)">Revisao dos Erros</h3>
+                    <h3 style="font-size:15px;font-weight:700;color:var(--text-secondary)">Revisão dos Erros</h3>
                     <button class="btn-export-review" id="btnExportReview" title="Exportar revisao">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                       Exportar
@@ -1140,7 +1140,7 @@
                     </div>
                   `).join('')}
                 </div>
-              ` : '<p style="color:#00b894;margin-top:12px;font-weight:600">Parabens! Todas as respostas estao corretas!</p>'}
+              ` : '<p style="color:#00b894;margin-top:12px;font-weight:600">Parabéns! Todas as respostas estão corretas!</p>'}
               <button class="btn-submit result-btn" onclick="document.getElementById('playOverlay').classList.remove('show')">Fechar</button>
             </div>
           `;
@@ -1148,7 +1148,7 @@
           const exportBtn = document.getElementById('btnExportReview');
           if (exportBtn && wrongAnswers.length > 0) {
             exportBtn.addEventListener('click', () => {
-              let txt = 'REVISAO DOS ERROS - ' + quiz.title + '\n';
+              let txt = 'REVISÃO DOS ERROS - ' + quiz.title + '\n';
               txt += '='.repeat(50) + '\n';
               txt += 'Acertos: ' + score + '/' + shuffled.length + ' (' + pct + '%)\n';
               txt += 'Tempo: ' + timerStr + '\n\n';
@@ -1182,7 +1182,7 @@
               a.download = 'revisao_' + quiz.title.replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
               a.click();
               URL.revokeObjectURL(a.href);
-              showToast('Revisao exportada!', 'success');
+              showToast('Revisão exportada!', 'success');
             });
           }
         }

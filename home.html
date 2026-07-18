@@ -79,7 +79,7 @@
         </div>
         <div class="potion-info">
           <span class="potion-value" id="statVids">0</span>
-          <span class="potion-label">Visoes</span>
+          <span class="potion-label">Visões</span>
         </div>
       </div>
       <div class="potion-card potion-notes" data-delay="2">
@@ -96,7 +96,7 @@
         </div>
         <div class="potion-info">
           <span class="potion-value" id="statNotes">0</span>
-          <span class="potion-label">Grimorios</span>
+          <span class="potion-label">Grimórios</span>
         </div>
       </div>
       <div class="potion-card potion-quizzes" data-delay="3">
@@ -159,7 +159,7 @@
           <span class="streak-best" id="streakBest">Melhor recorde: 0 dias</span>
         </div>
         <div class="streak-bar-container">
-          <div class="streak-bar-label">Progresso diario</div>
+          <div class="streak-bar-label">Progresso diário</div>
           <div class="streak-goal-bar">
             <div class="streak-goal-fill" id="streakGoalFillBar" style="width:0%"></div>
           </div>
@@ -187,14 +187,14 @@
           <div class="empty-scroll">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           </div>
-          <p>Nenhuma missao registrada.</p>
-          <p>Comece sua jornada adicionando pergaminhos ou visoes!</p>
+          <p>Nenhuma missão registrada.</p>
+          <p>Comece sua jornada adicionando pergaminhos ou visões!</p>
         </div>
       </section>
 
       <section class="content-section">
         <div class="section-header">
-          <h2 class="section-title">&#9733; Arvore de Habilidades</h2>
+          <h2 class="section-title">&#9733; Árvore de Habilidades</h2>
         </div>
         <div id="subjectBreakdown" class="skill-tree"></div>
       </section>
@@ -245,7 +245,10 @@
         { range: [18, 22], text: 'Toque de Recolhida', emoji: '\uD83C\uDF19' },
         { range: [22, 5], text: 'Vigilia Noturna', emoji: '\u2B50' }
       ];
-      const g = greetings.find(gr => hour >= gr.range[0] && hour < gr.range[1]) || greetings[0];
+      const g = greetings.find(gr => {
+        if (gr.range[0] < gr.range[1]) return hour >= gr.range[0] && hour < gr.range[1];
+        return hour >= gr.range[0] || hour < gr.range[1];
+      }) || greetings[0];
       document.getElementById('greeting').textContent = g.text + ', ' + userName.split(' ')[0] + ' ' + g.emoji;
 
       const streakData = updateStreakOnLogin();
@@ -318,7 +321,7 @@
             <div class="quest-card-inner">
               <div class="quest-card-glow"></div>
               <div class="quest-top">
-                <div class="quest-badge">${item._type === 'doc' ? '\uD83D\uDCDC Pergaminho' : '\uD83D\uDCFA Visao'}</div>
+                <div class="quest-badge">${item._type === 'doc' ? '\uD83D\uDCDC Pergaminho' : '\uD83D\uDCFA Visão'}</div>
                 <button class="pin-btn ${pinned ? 'pinned' : ''}" data-pin-type="${item._type}" data-pin-id="${item.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
               </div>
               <h3 class="quest-title">${item.title}</h3>
@@ -329,7 +332,7 @@
                   ~${timeEst} min
                 </div>
                 <div class="quest-actions">
-                  <button class="quest-action-btn" title="${item._type === 'doc' ? 'Ler Pergaminho' : 'Ver Visao'}">
+                  <button class="quest-action-btn" title="${item._type === 'doc' ? 'Ler Pergaminho' : 'Ver Visão'}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
                   </button>
                 </div>

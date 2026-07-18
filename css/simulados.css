@@ -274,8 +274,8 @@ body {
 }
 
 .btn-sim.btn-delete:hover {
-  border-color: #e74c3c;
-  color: #e74c3c;
+  border-color: #e17055;
+  color: #e17055;
   background: rgba(231,76,60,0.08);
 }
 
@@ -498,7 +498,7 @@ body {
 }
 
 .sim-timer.danger {
-  color: #e74c3c;
+  color: #e17055;
   animation: timerPulse 1s ease infinite;
 }
 
@@ -535,9 +535,9 @@ body {
 .sim-btn-finish {
   padding: 7px 14px;
   border-radius: 7px;
-  border: 1px solid #e74c3c;
+  border: 1px solid #e17055;
   background: transparent;
-  color: #e74c3c;
+  color: #e17055;
   font-size: 12px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
@@ -663,9 +663,9 @@ body {
 }
 
 .play-option.wrong {
-  border-color: #e74c3c;
+  border-color: #e17055;
   background: rgba(231,76,60,0.1);
-  color: #e74c3c;
+  color: #e17055;
   pointer-events: none;
   animation: shake 0.4s ease;
 }
@@ -707,7 +707,7 @@ body {
 }
 
 .play-option.wrong .option-letter {
-  background: #e74c3c;
+  background: #e17055;
   color: #fff;
 }
 
@@ -821,8 +821,8 @@ body {
 }
 
 .btn-wrong:hover {
-  border-color: #e74c3c;
-  color: #e74c3c;
+  border-color: #e17055;
+  color: #e17055;
   background: rgba(231,76,60,0.08);
 }
 
@@ -1042,7 +1042,7 @@ body {
 
 .sim-answer-cell.wrong {
   background: rgba(231,76,60,0.15);
-  color: #e74c3c;
+  color: #e17055;
 }
 
 /* ==================== REVIEW ==================== */
@@ -1061,7 +1061,7 @@ body {
 .sim-review-item {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-left: 3px solid #e74c3c;
+  border-left: 3px solid #e17055;
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 10px;
@@ -1082,7 +1082,7 @@ body {
 }
 
 .sim-review-answer.wrong-text {
-  color: #e74c3c;
+  color: #e17055;
 }
 
 .sim-review-answer.correct-text {

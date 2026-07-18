@@ -105,9 +105,12 @@ function initEmojiPickers() {
     });
   });
 
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.emoji-picker.show').forEach(p => p.classList.remove('show'));
-  });
+  if (!initEmojiPickers._bound) {
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.emoji-picker.show').forEach(p => p.classList.remove('show'));
+    });
+    initEmojiPickers._bound = true;
+  }
 }
 
 /* ==================== SHARED STYLES ==================== */
@@ -424,7 +427,8 @@ document.head.appendChild(style);
 
 /* ==================== SIDEBAR ==================== */
 function updateSidebarUser() {
-  const user = JSON.parse(sessionStorage.getItem('enem_currentUser') || 'null');
+  let user;
+  try { user = JSON.parse(sessionStorage.getItem('enem_currentUser') || 'null'); } catch(e) { user = null; }
   if (!user) return;
 
   const avatar = document.querySelector('.sidebar-footer .avatar');
@@ -463,7 +467,7 @@ function initUserMenu() {
   dropdown.innerHTML = `
     <button class="user-dropdown-item" id="btnSettings">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Configuracoes
+      Configurações
     </button>
     <div class="user-dropdown-divider"></div>
     <button class="user-dropdown-item danger" id="btnLogoutSidebar">
@@ -533,15 +537,15 @@ function renderSidebar(activePage) {
   const isAdmin = user && user.role === 'admin';
 
   const pages = [
-    { id: 'home', href: 'home.html', label: 'Inicio', icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>' },
+    { id: 'home', href: 'home.html', label: 'Início', icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>' },
     { id: 'documents', href: 'documents.html', label: 'Documentos', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
-    { id: 'videos', href: 'videos.html', label: 'Videos', icon: '<polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/>' },
+    { id: 'videos', href: 'videos.html', label: 'Vídeos', icon: '<polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/>' },
     { id: 'quizzes', href: 'quizzes.html', label: 'Quizzes', icon: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
     { id: 'simulados', href: 'simulados.html', label: 'Simulados', icon: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>' }
   ];
 
   const adminPages = [
-    { id: 'users', href: 'users.html', label: 'Usuarios', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' }
+    { id: 'users', href: 'users.html', label: 'Usuários', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' }
   ];
 
   const allPages = isAdmin ? [...pages, ...adminPages] : pages;
@@ -568,7 +572,7 @@ function renderSidebar(activePage) {
         <div class="user">
           <div class="avatar">${userInitial}</div>
           <div class="user-info">
-            <span class="user-name">${userName}</span>
+            <span class="user-name">${String(userName).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
             <span class="user-role">${isAdmin ? 'Administrador' : 'Estudante'}</span>
           </div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;color:var(--text-dim);flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
@@ -587,7 +591,7 @@ function openSettings() {
     overlay.innerHTML = `
       <div class="modal" style="width:480px;">
         <div class="modal-header">
-          <h2>Configuracoes</h2>
+          <h2>Configurações</h2>
           <button class="modal-close" id="settingsClose">&times;</button>
         </div>
         <div style="padding-bottom:8px">
@@ -611,7 +615,7 @@ function openSettings() {
           </label>
 
           <button class="btn-submit" id="settingsReset" style="background:var(--bg-card-hover);color:var(--text-secondary);border:1px solid var(--border);">
-            Restaurar padroes
+            Restaurar padrões
           </button>
         </div>
       </div>
@@ -679,7 +683,7 @@ function openSettings() {
       updateFontSizePreview();
       const sidebar = document.querySelector('.sidebar');
       if (sidebar) sidebar.classList.remove('collapsed');
-      showToast('Configuracoes restauradas', 'success');
+      showToast('Configurações restauradas', 'success');
     });
 
     document.getElementById('settingsClose').addEventListener('click', () => {
@@ -859,7 +863,9 @@ function showToast(message, type = 'info') {
   const icons = { success: '\u2705', error: '\u274C', info: '\u2139\uFE0F' };
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${message}</span>`;
+  const safeIcon = icons[type] || icons.info;
+  toast.innerHTML = `<span class="toast-icon">${safeIcon}</span><span></span>`;
+  toast.querySelector('span:last-child').textContent = message;
   container.appendChild(toast);
   setTimeout(() => {
     toast.classList.add('toast-exit');
@@ -884,6 +890,7 @@ function showConfirmModal(message) {
     document.body.appendChild(overlay);
 
     const close = (result) => {
+      document.removeEventListener('keydown', escHandler);
       overlay.style.animation = 'confirmFadeIn 0.15s ease reverse forwards';
       setTimeout(() => overlay.remove(), 150);
       resolve(result);
@@ -892,9 +899,8 @@ function showConfirmModal(message) {
     overlay.querySelector('#cmConfirm').addEventListener('click', () => close(true));
     overlay.querySelector('#cmCancel').addEventListener('click', () => close(false));
     overlay.addEventListener('click', e => { if (e.target === overlay) close(false); });
-    document.addEventListener('keydown', function handler(e) {
-      if (e.key === 'Escape') { close(false); document.removeEventListener('keydown', handler); }
-    });
+    const escHandler = (e) => { if (e.key === 'Escape') close(false); };
+    document.addEventListener('keydown', escHandler);
   });
 }
 

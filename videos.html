@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENEM - Videos</title>
+  <title>ENEM - Vídeos</title>
   <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -21,17 +21,17 @@
     <div id="listView">
       <header class="topbar">
         <div class="topbar-left">
-          <h1>Videos</h1>
-          <p>Assista aulas e faca anotacoes diretamente aqui</p>
+          <h1>Vídeos</h1>
+          <p>Assista aulas e faça anotações diretamente aqui</p>
         </div>
         <div class="topbar-right">
           <div class="search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Buscar videos..." id="searchInput">
+            <input type="text" placeholder="Buscar vídeos..." id="searchInput">
           </div>
           <button class="btn-primary" id="btnAdd">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Adicionar Video
+            Adicionar Vídeo
           </button>
         </div>
       </header>
@@ -41,8 +41,8 @@
         <div class="empty-icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
         </div>
-        <p>Nenhum video adicionado.</p>
-        <p>Clique em "Adicionar Video" para colar um link do YouTube.</p>
+        <p>Nenhum vídeo adicionado.</p>
+        <p>Clique em "Adicionar Vídeo" para colar um link do YouTube.</p>
       </div>
     </div>
 
@@ -53,7 +53,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Voltar
         </button>
-        <div class="watch-session-timer" id="sessionTimer" title="Tempo nesta sessao">
+        <div class="watch-session-timer" id="sessionTimer" title="Tempo nesta sessão">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
           <span id="sessionTimerText">00:00</span>
         </div>
@@ -74,9 +74,9 @@
             <p class="watch-desc" id="watchDesc"></p>
           </div>
           <div class="comments-section">
-            <h3>Comentarios</h3>
+            <h3>Comentários</h3>
             <div class="comment-input-row">
-              <input type="text" id="videoCommentInput" placeholder="Duvida ou comentario...">
+              <input type="text" id="videoCommentInput" placeholder="Dúvida ou comentário...">
               <button id="videoCommentBtn">Enviar</button>
             </div>
             <div id="videoCommentsList"></div>
@@ -85,8 +85,8 @@
         <div class="watch-notes-panel">
           <div class="notes-panel-header">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <h3>Anotacoes</h3>
-            <button class="btn-export-notes" id="btnExportNotes" title="Exportar anotacoes">
+            <h3>Anotações</h3>
+            <button class="btn-export-notes" id="btnExportNotes" title="Exportar anotações">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             </button>
           </div>
@@ -95,14 +95,14 @@
               <div class="note-toolbar" id="noteToolbar">
                 <div class="note-toolbar-group">
                   <button class="note-toolbar-btn" data-command="bold" title="Negrito (Ctrl+B)"><strong>B</strong></button>
-                  <button class="note-toolbar-btn" data-command="italic" title="Italico (Ctrl+I)"><em>I</em></button>
+                  <button class="note-toolbar-btn" data-command="italic" title="Itálico (Ctrl+I)"><em>I</em></button>
                   <button class="note-toolbar-btn" data-command="underline" title="Sublinhado (Ctrl+U)"><u>U</u></button>
                 </div>
                 <div class="note-toolbar-sep"></div>
                 <div class="note-toolbar-group">
-                  <button class="note-toolbar-btn" data-command="h1" title="Titulo Grande">H1</button>
-                  <button class="note-toolbar-btn" data-command="h2" title="Titulo Medio">H2</button>
-                  <button class="note-toolbar-btn" data-command="h3" title="Titulo Pequeno">H3</button>
+                  <button class="note-toolbar-btn" data-command="h1" title="Título Grande">H1</button>
+                  <button class="note-toolbar-btn" data-command="h2" title="Título Médio">H2</button>
+                  <button class="note-toolbar-btn" data-command="h3" title="Título Pequeno">H3</button>
                   <button class="note-toolbar-btn" data-command="p" title="Texto normal">P</button>
                 </div>
                 <div class="note-toolbar-sep"></div>
@@ -145,10 +145,10 @@
                   </div>
                 </div>
               </div>
-              <div class="note-editor" contenteditable="true" id="noteText" data-placeholder="Escreva uma anotacao..."></div>
+              <div class="note-editor" contenteditable="true" id="noteText" data-placeholder="Escreva uma anotação..."></div>
               <button class="emoji-btn" data-emoji-target="noteText" title="Inserir emoji">&#128578;</button>
             </div>
-            <button class="btn-note" id="btnAddNote" title="Salvar anotacao">
+            <button class="btn-note" id="btnAddNote" title="Salvar anotação">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
           </div>
@@ -162,18 +162,18 @@
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header">
-        <h2>Adicionar Video</h2>
+        <h2>Adicionar Vídeo</h2>
         <button class="modal-close" id="modalClose">&times;</button>
       </div>
       <form id="vidForm">
         <div class="form-group">
-          <label for="vidTitle">Titulo *</label>
-          <input type="text" id="vidTitle" placeholder="Ex: Aula sobre celulas" required>
+          <label for="vidTitle">Título *</label>
+          <input type="text" id="vidTitle" placeholder="Ex: Aula sobre células" required>
         </div>
         <div class="form-group">
-          <label for="vidSubject">Materia *</label>
+          <label for="vidSubject">Matéria *</label>
           <select id="vidSubject" required>
-            <option value="">Selecione a materia</option>
+            <option value="">Selecione a matéria</option>
           </select>
         </div>
         <div class="form-group">
@@ -181,13 +181,13 @@
           <input type="url" id="vidUrl" placeholder="https://www.youtube.com/watch?v=..." required>
         </div>
         <div class="form-group">
-          <label for="vidDesc">Descricao</label>
+          <label for="vidDesc">Descrição</label>
           <div class="textarea-wrapper">
-            <textarea id="vidDesc" rows="3" placeholder="Breve descricao do video..."></textarea>
+            <textarea id="vidDesc" rows="3" placeholder="Breve descrição do vídeo..."></textarea>
             <button class="emoji-btn" data-emoji-target="vidDesc" title="Inserir emoji">&#128578;</button>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Salvar Video</button>
+        <button type="submit" class="btn-submit">Salvar Vídeo</button>
       </form>
     </div>
   </div>
@@ -416,7 +416,7 @@
                 <div class="video-meta">
                   <span>${formatDate(vid.created_at)}</span>
                   <span class="meta-dot"></span>
-                  <span>${(vid.notes || []).length} anotacao(oes)</span>
+                  <span>${(vid.notes || []).length} anotação(ões)</span>
                   <span class="meta-dot"></span>
                   <span class="time-estimate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>~${timeEst} min</span>
                   ${timeSpent[vid.id] ? `<span class="meta-dot"></span><span class="time-spent-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>${formatTimeSpent(timeSpent[vid.id])} assistido</span>` : ''}
@@ -439,7 +439,7 @@
                 await removeVideo(vid.id);
                 await renderVideos(activeFilter);
                 await renderFilters();
-                showToast('Video removido', 'success');
+                showToast('Vídeo removido', 'success');
               }
             });
             el.querySelector('.pin-btn').addEventListener('click', (e) => {
@@ -479,7 +479,7 @@
         const list = document.getElementById('videoCommentsList');
         list.innerHTML = '';
         if (comments.length === 0) {
-          list.innerHTML = '<p class="no-comments">Nenhum comentario ainda. Seja o primeiro!</p>';
+          list.innerHTML = '<p class="no-comments">Nenhum comentário ainda. Seja o primeiro!</p>';
           return;
         }
         comments.forEach(c => {
@@ -504,7 +504,7 @@
         sub.textContent = s ? s.name : 'Geral';
         sub.style.color = s ? s.color : '';
         document.getElementById('watchDate').textContent = formatDate(vid.created_at);
-        document.getElementById('watchDesc').textContent = vid.description || 'Sem descricao.';
+        document.getElementById('watchDesc').textContent = vid.description || 'Sem descrição.';
         const ytId = getYoutubeId(vid.url);
         const playerEl = document.getElementById('watchPlayer');
         ytPlayer = null;
@@ -529,8 +529,8 @@
           playerEl.innerHTML = `
             <div class="watch-embed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-dim);">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-              <p>Link do YouTube invalido</p>
-              <p style="font-size:11px;">Verifique se o link esta correto.</p>
+              <p>Link do YouTube inválido</p>
+              <p style="font-size:11px;">Verifique se o link está correto.</p>
             </div>`;
         }
         renderNotes(vid);
@@ -545,7 +545,7 @@
         list.innerHTML = '';
         const notes = vid.notes || [];
         if (notes.length === 0) {
-          list.innerHTML = '<p class="no-notes">Nenhuma anotacao ainda.</p>';
+          list.innerHTML = '<p class="no-notes">Nenhuma anotação ainda.</p>';
           return;
         }
         notes.forEach((note, i) => {
@@ -581,7 +581,7 @@
             const updated = allVids.find(v => v.id === vid.id);
             renderNotes(updated);
             await renderVideos(activeFilter);
-            showToast('Anotacao removida', 'success');
+            showToast('Anotação removida', 'success');
           });
           list.appendChild(el);
         });
@@ -689,7 +689,7 @@
         renderNotes(vid);
         await renderVideos(activeFilter);
         recordActivity();
-        showToast('Anotacao salva!' + (time !== null ? ' (' + formatTimestamp(time) + ')' : ''), 'success');
+        showToast('Anotação salva!' + (time !== null ? ' (' + formatTimestamp(time) + ')' : ''), 'success');
       });
 
       document.getElementById('videoCommentBtn').addEventListener('click', async () => {
@@ -700,7 +700,7 @@
         await addComment('video', currentVideoId, user.id, user.name, text);
         input.value = '';
         renderVideoComments(currentVideoId);
-        showToast('Comentario enviado!', 'success');
+        showToast('Comentário enviado!', 'success');
       });
 
       document.getElementById('videoCommentInput').addEventListener('keydown', e => {
@@ -712,10 +712,10 @@
         const allVids = await getVideos();
         const vid = allVids.find(v => v.id === currentVideoId);
         if (!vid || !vid.notes || vid.notes.length === 0) {
-          showToast('Nenhuma anotacao para exportar', 'info');
+          showToast('Nenhuma anotação para exportar', 'info');
           return;
         }
-        let txt = 'ANOTACOES - ' + vid.title + '\n';
+        let txt = 'ANOTAÇÕES - ' + vid.title + '\n';
         txt += '='.repeat(50) + '\n\n';
         vid.notes.forEach((n, i) => {
           txt += (n.timestamp !== undefined ? '[' + formatTimestamp(n.timestamp) + '] ' : '') + stripHtml(n.text) + '\n';
@@ -725,17 +725,17 @@
         const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'anotacoes_' + vid.title.replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
+        a.download = 'anotações_' + vid.title.replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
         a.click();
         URL.revokeObjectURL(a.href);
-        showToast('Anotacoes exportadas!', 'success');
+        showToast('Anotações exportadas!', 'success');
       });
 
       document.getElementById('vidForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const url = document.getElementById('vidUrl').value.trim();
         if (!getYoutubeId(url)) {
-          showToast('Por favor, insira um link valido do YouTube.', 'error');
+          showToast('Por favor, insira um link válido do YouTube.', 'error');
           return;
         }
         await addVideo({
@@ -749,7 +749,7 @@
         this.reset();
         await renderVideos(activeFilter);
         await renderFilters();
-        showToast('Video adicionado com sucesso!', 'success');
+        showToast('Vídeo adicionado com sucesso!', 'success');
       });
 
       document.querySelector('.topbar').addEventListener('input', function(e) {

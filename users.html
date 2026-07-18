@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENEM - Usuarios</title>
+  <title>ENEM - Usuários</title>
   <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,13 +19,13 @@
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <h1>Usuarios</h1>
-        <p>Gerencie os usuarios da plataforma</p>
+        <h1>Usuários</h1>
+        <p>Gerencie os usuários da plataforma</p>
       </div>
       <div class="topbar-right">
         <button class="btn btn-primary" id="btnAddUser">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo Usuario
+          Novo Usuário
         </button>
       </div>
     </header>
@@ -34,13 +34,13 @@
 
     <div id="emptyState" class="empty-state" style="display:none;">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <p>Nenhum usuario cadastrado</p>
+      <p>Nenhum usuário cadastrado</p>
     </div>
 
     <div id="userModal" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
-          <h3 id="modalTitle">Novo Usuario</h3>
+          <h3 id="modalTitle">Novo Usuário</h3>
           <button class="modal-close" id="modalClose">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -142,7 +142,7 @@
 
       function openModal(user) {
         if (user) {
-          modalTitle.textContent = 'Editar Usuario';
+          modalTitle.textContent = 'Editar Usuário';
           editUserId.value = user.id;
           userName.value = user.name;
           userEmail.value = user.email;
@@ -151,7 +151,7 @@
           userPassword.required = false;
           userRole.value = user.role || 'user';
         } else {
-          modalTitle.textContent = 'Novo Usuario';
+          modalTitle.textContent = 'Novo Usuário';
           editUserId.value = '';
           userForm.reset();
           userPassword.placeholder = 'Minimo 6 caracteres';
@@ -181,16 +181,16 @@
         const id = editUserId.value ? parseInt(editUserId.value) : null;
 
         if (!name || !email) return;
-        if (!id && password.length < 6) { alert('A senha deve ter no minimo 6 caracteres.'); return; }
+        if (!id && password.length < 6) { alert('A senha deve ter no mínimo 6 caracteres.'); return; }
 
         if (id) {
           const data = { name, email, role };
           if (password) data.password = password;
           const ok = await updateUser(id, data);
-          if (!ok) { alert('E-mail ja esta em uso.'); return; }
+          if (!ok) { alert('E-mail já está em uso.'); return; }
         } else {
           const ok = await addUser({ name, email, password, role });
-          if (!ok) { alert('E-mail ja esta em uso.'); return; }
+          if (!ok) { alert('E-mail já está em uso.'); return; }
         }
         closeModal();
         await renderUsers();
@@ -205,7 +205,7 @@
           const user = users.find(u => u.id === id);
           if (user) openModal(user);
         } else if (btn.dataset.action === 'delete') {
-          if (await showConfirmModal('Tem certeza que deseja excluir este usuario?')) {
+          if (await showConfirmModal('Tem certeza que deseja excluir este usuário?')) {
             await removeUser(id);
             await renderUsers();
           }
