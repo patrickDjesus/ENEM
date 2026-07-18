@@ -34,6 +34,7 @@ body {
 }
 
 .topbar h1 {
+  font-family: 'Cinzel', serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
@@ -1177,9 +1178,9 @@ body {
 }
 
 .btn-add-fill:hover {
-  border-color: #6c5ce7;
-  color: #6c5ce7;
-  background: rgba(108,92,231,0.06);
+  border-color: #d4a056;
+  color: #d4a056;
+  background: rgba(212,160,86,0.06);
 }
 
 .btn-add-order:hover {
@@ -1201,8 +1202,8 @@ body {
 }
 
 .badge-fill {
-  background: rgba(108,92,231,0.12);
-  color: #6c5ce7;
+  background: rgba(212,160,86,0.12);
+  color: #d4a056;
 }
 
 .badge-order {

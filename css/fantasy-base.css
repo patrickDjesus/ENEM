@@ -1,0 +1,464 @@
+/* ==================== FANTASY-BASE.CSS ==================== */
+/* Shared fantasy RPG styling for all pages except home */
+
+/* --- Body texture overlay (subtle mist) --- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(212,160,86,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(139,26,58,0.03) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Topbar --- */
+.topbar {
+  border-bottom: 1px solid rgba(212,160,86,0.12);
+  padding-bottom: 20px;
+}
+
+.topbar-left h1 {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #d4a056, #c89a48);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.topbar-left p {
+  font-size: 13px;
+  color: #8a7a64;
+}
+
+/* --- Section titles --- */
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #d4a056;
+  letter-spacing: 0.5px;
+}
+
+/* --- Cards (glass panels) --- */
+.video-card,
+.doc-card,
+.quiz-card,
+.stat-card,
+.card {
+  background: rgba(40,28,16,0.65) !important;
+  border: 1px solid rgba(212,160,86,0.12) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease !important;
+}
+
+.video-card:hover,
+.doc-card:hover,
+.quiz-card:hover,
+.stat-card:hover,
+.card:hover {
+  border-color: rgba(212,160,86,0.3) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 0 20px rgba(212,160,86,0.06) !important;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+  background: linear-gradient(135deg, #d4a056, #c89a48) !important;
+  color: #0c0806 !important;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #c89a48, #b88a38) !important;
+  box-shadow: 0 4px 16px rgba(212,160,86,0.25);
+}
+
+.btn-secondary,
+.btn-outline,
+.btn-view-external {
+  border-color: rgba(212,160,86,0.2) !important;
+  color: #c8b898 !important;
+  background: rgba(40,28,16,0.4) !important;
+}
+
+.btn-secondary:hover,
+.btn-outline:hover,
+.btn-view-external:hover {
+  border-color: rgba(212,160,86,0.4) !important;
+  color: #d4a056 !important;
+  background: rgba(212,160,86,0.08) !important;
+  box-shadow: 0 0 12px rgba(212,160,86,0.1);
+}
+
+.btn-danger {
+  background: rgba(139,26,58,0.8) !important;
+  color: #fff !important;
+  border: 1px solid rgba(139,26,58,0.4) !important;
+}
+
+.btn-danger:hover {
+  background: rgba(139,26,58,1) !important;
+  box-shadow: 0 4px 16px rgba(139,26,58,0.3);
+}
+
+.btn-success {
+  background: rgba(45,154,74,0.8) !important;
+  color: #fff !important;
+}
+
+.btn-success:hover {
+  background: rgba(45,154,74,1) !important;
+  box-shadow: 0 4px 16px rgba(45,154,74,0.3);
+}
+
+/* --- Filter buttons --- */
+.filter-btn {
+  border-color: rgba(212,160,86,0.15) !important;
+  color: #8a7a64 !important;
+  background: rgba(40,28,16,0.5) !important;
+}
+
+.filter-btn:hover {
+  border-color: rgba(212,160,86,0.3) !important;
+  color: #c8b898 !important;
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #d4a056, #c89a48) !important;
+  color: #0c0806 !important;
+  border-color: transparent !important;
+  font-weight: 600;
+}
+
+/* --- Search bar --- */
+.search {
+  background: rgba(40,28,16,0.6) !important;
+  border-color: rgba(212,160,86,0.12) !important;
+}
+
+.search:focus-within {
+  border-color: rgba(212,160,86,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(212,160,86,0.1) !important;
+}
+
+.search svg {
+  color: #6a5a48 !important;
+}
+
+.search:focus-within svg {
+  color: #d4a056 !important;
+}
+
+.search input::placeholder {
+  color: #4a3a28 !important;
+}
+
+/* --- Forms / inputs --- */
+.form-group input,
+.form-group select,
+.form-group textarea,
+.widget-body textarea,
+.comment-input-row input {
+  background: rgba(20,14,8,0.85) !important;
+  border-color: rgba(212,160,86,0.12) !important;
+  color: #e8dcc8 !important;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.widget-body textarea:focus,
+.comment-input-row input:focus {
+  border-color: rgba(212,160,86,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(212,160,86,0.1) !important;
+}
+
+.form-group label {
+  color: #c8b898 !important;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+/* --- Modals --- */
+.modal {
+  background: rgba(30,22,14,0.95) !important;
+  border: 1px solid rgba(212,160,86,0.2) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.modal-header h2 {
+  font-family: 'Cinzel', serif;
+  color: #d4a056 !important;
+}
+
+.confirm-box {
+  background: rgba(30,22,14,0.95) !important;
+  border: 1px solid rgba(212,160,86,0.2) !important;
+}
+
+/* --- Tables --- */
+table {
+  border-color: rgba(212,160,86,0.1) !important;
+}
+
+th {
+  color: #d4a056 !important;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  border-bottom-color: rgba(212,160,86,0.2) !important;
+  background: rgba(40,28,16,0.4) !important;
+}
+
+td {
+  border-bottom-color: rgba(212,160,86,0.06) !important;
+  color: #c8b898 !important;
+}
+
+tr:hover td {
+  background: rgba(212,160,86,0.04) !important;
+}
+
+/* --- Sidebar border --- */
+.sidebar {
+  border-right-color: rgba(212,160,86,0.1) !important;
+}
+
+.sidebar-footer {
+  border-top-color: rgba(212,160,86,0.1) !important;
+}
+
+/* --- Nav active item glow --- */
+.nav-item.active {
+  background: rgba(212,160,86,0.08) !important;
+  color: #e8dcc8 !important;
+}
+
+.nav-item.active svg {
+  color: #d4a056 !important;
+}
+
+/* --- Pagination --- */
+.pagination-btn {
+  border-color: rgba(212,160,86,0.15) !important;
+  color: #8a7a64 !important;
+  background: rgba(40,28,16,0.5) !important;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: rgba(212,160,86,0.3) !important;
+  color: #c8b898 !important;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+}
+
+/* --- Tabs --- */
+.tab-btn,
+.widget-tab,
+.ranking-tab {
+  color: #6a5a48 !important;
+  border-color: rgba(212,160,86,0.1) !important;
+  background: rgba(40,28,16,0.4) !important;
+}
+
+.tab-btn:hover,
+.widget-tab:hover,
+.ranking-tab:hover {
+  color: #c8b898 !important;
+  border-color: rgba(212,160,86,0.2) !important;
+}
+
+.tab-btn.active,
+.widget-tab.active,
+.ranking-tab.active {
+  background: linear-gradient(135deg, #d4a056, #c89a48) !important;
+  color: #0c0806 !important;
+  border-color: transparent !important;
+}
+
+/* --- Empty state --- */
+.empty-state {
+  color: #6a5a48 !important;
+}
+
+.empty-state svg {
+  color: #4a3a28 !important;
+}
+
+/* --- Toast --- */
+.toast {
+  background: rgba(40,28,16,0.9) !important;
+  border: 1px solid rgba(212,160,86,0.2) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* --- Difficulty tags --- */
+.difficulty-tag.easy {
+  background: rgba(45,154,74,0.15);
+  color: #2d9a4a;
+  border-color: rgba(45,154,74,0.3);
+}
+
+.difficulty-tag.medium {
+  background: rgba(212,160,86,0.15);
+  color: #d4a056;
+  border-color: rgba(212,160,86,0.3);
+}
+
+.difficulty-tag.hard {
+  background: rgba(139,26,58,0.15);
+  color: #e0527a;
+  border-color: rgba(139,26,58,0.3);
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar-thumb {
+  background: #4a3a28 !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6a5a48 !important;
+}
+
+/* --- Bookmark star --- */
+.bookmark-btn {
+  color: #6a5a48 !important;
+}
+
+.bookmark-btn.active,
+.bookmark-btn:hover {
+  color: #d4a056 !important;
+}
+
+/* --- Pin button --- */
+.pin-btn {
+  color: #6a5a48 !important;
+}
+
+.pin-btn:hover,
+.pin-btn.pinned {
+  color: #d4a056 !important;
+}
+
+/* --- Comments --- */
+.comment-item {
+  background: rgba(30,22,14,0.6) !important;
+  border-color: rgba(212,160,86,0.08) !important;
+}
+
+.comment-avatar {
+  background: rgba(212,160,86,0.1) !important;
+  color: #d4a056 !important;
+}
+
+.comment-meta strong {
+  color: #c8b898 !important;
+}
+
+/* --- Selection --- */
+::selection {
+  background: #d4a056;
+  color: #0c0806;
+}
+
+/* --- Ranking --- */
+.ranking-pos {
+  background: rgba(40,28,16,0.6) !important;
+  color: #6a5a48 !important;
+}
+
+.ranking-item:nth-child(1) .ranking-pos {
+  background: linear-gradient(135deg, #d4a056, #b88a38) !important;
+  color: #0c0806 !important;
+}
+
+.ranking-item:nth-child(2) .ranking-pos {
+  background: rgba(200,200,200,0.3) !important;
+  color: #e8dcc8 !important;
+}
+
+.ranking-item:nth-child(3) .ranking-pos {
+  background: rgba(139,26,58,0.6) !important;
+  color: #e8dcc8 !important;
+}
+
+/* --- Progress bars --- */
+.progress-bar {
+  background: rgba(40,28,16,0.6) !important;
+  border-color: rgba(212,160,86,0.1) !important;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #d4a056, #c89a48) !important;
+}
+
+/* --- Quiz timer --- */
+.timer-display {
+  background: rgba(40,28,16,0.7) !important;
+  border-color: rgba(212,160,86,0.15) !important;
+  color: #d4a056 !important;
+}
+
+/* --- Quiz options --- */
+.quiz-option {
+  border-color: rgba(212,160,86,0.12) !important;
+  background: rgba(40,28,16,0.5) !important;
+}
+
+.quiz-option:hover {
+  border-color: rgba(212,160,86,0.3) !important;
+  background: rgba(40,28,16,0.7) !important;
+}
+
+.quiz-option.selected {
+  border-color: rgba(212,160,86,0.5) !important;
+  background: rgba(212,160,86,0.1) !important;
+}
+
+/* --- Badge/tag --- */
+.badge {
+  background: rgba(212,160,86,0.15);
+  color: #d4a056;
+  border-color: rgba(212,160,86,0.2);
+}
+
+/* --- Tooltip / info --- */
+.tooltip {
+  background: rgba(30,22,14,0.95) !important;
+  border-color: rgba(212,160,86,0.2) !important;
+  color: #c8b898 !important;
+}
+
+/* --- Login page (index.html) specific --- */
+.login-left {
+  background:
+    linear-gradient(135deg, #1a0c06 0%, #2a1a0e 50%, #0c0806 100%) !important;
+}
+
+.login-left .brand-title {
+  font-family: 'Cinzel', serif;
+  background: linear-gradient(135deg, #d4a056, #c89a48, #d4a056);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-right {
+  background: rgba(20,14,8,0.85) !important;
+}
+
+/* --- Mobile responsive --- */
+@media (max-width: 768px) {
+  .topbar-left h1 {
+    font-size: 18px;
+  }
+}

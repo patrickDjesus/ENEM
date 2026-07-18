@@ -36,6 +36,7 @@ body {
 .topbar h1 {
   font-size: 26px;
   font-weight: 700;
+  font-family: 'Cinzel', serif;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
@@ -68,7 +69,7 @@ body {
 
 .btn-primary:hover {
   background: var(--accent-2);
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+  box-shadow: 0 4px 16px rgba(212, 160, 86, 0.3);
   transform: translateY(-1px);
 }
 
@@ -138,7 +139,7 @@ body {
   inset: 0;
   border-radius: var(--radius-md);
   padding: 1px;
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  background: linear-gradient(135deg, #d4a056, #c89a48);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -168,7 +169,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  background: linear-gradient(135deg, #d4a056, #b88a38);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,7 +317,8 @@ body {
 .modal-header h3 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  font-family: 'Cinzel', serif;
+  color: #d4a056;
 }
 
 .modal-close {
