@@ -348,6 +348,77 @@ style.textContent = `
     margin: 0 auto 16px;
     display: block;
   }
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: confirmFadeIn 0.2s ease forwards;
+  }
+  .confirm-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    min-width: 340px;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    animation: confirmScaleIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  .confirm-box p {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .confirm-actions button {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+    min-width: 100px;
+  }
+  .confirm-cancel {
+    background: var(--bg-card);
+    color: var(--text-dim);
+  }
+  .confirm-cancel:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+  .confirm-danger {
+    background: #e74c3c;
+    color: #fff;
+    border-color: #e74c3c;
+  }
+  .confirm-danger:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+  }
+  @keyframes confirmFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes confirmScaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
 `;
 document.head.appendChild(style);
 
@@ -794,6 +865,37 @@ function showToast(message, type = 'info') {
     toast.classList.add('toast-exit');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+/* ==================== CONFIRM MODAL ==================== */
+function showConfirmModal(message) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    const safeMsg = String(message).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p>${safeMsg}</p>
+        <div class="confirm-actions">
+          <button class="confirm-cancel" id="cmCancel">Cancelar</button>
+          <button class="confirm-danger" id="cmConfirm">Confirmar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = (result) => {
+      overlay.style.animation = 'confirmFadeIn 0.15s ease reverse forwards';
+      setTimeout(() => overlay.remove(), 150);
+      resolve(result);
+    };
+
+    overlay.querySelector('#cmConfirm').addEventListener('click', () => close(true));
+    overlay.querySelector('#cmCancel').addEventListener('click', () => close(false));
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(false); });
+    document.addEventListener('keydown', function handler(e) {
+      if (e.key === 'Escape') { close(false); document.removeEventListener('keydown', handler); }
+    });
+  });
 }
 
 /* ==================== INIT ==================== */

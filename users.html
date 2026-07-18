@@ -203,7 +203,7 @@
           const user = users.find(u => u.id === id);
           if (user) openModal(user);
         } else if (btn.dataset.action === 'delete') {
-          if (confirm('Tem certeza que deseja excluir este usuario?')) {
+          if (await showConfirmModal('Tem certeza que deseja excluir este usuario?')) {
             await removeUser(id);
             await renderUsers();
           }

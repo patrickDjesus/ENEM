@@ -188,7 +188,7 @@
             `;
             el.querySelector('.btn-view').addEventListener('click', () => viewDoc(doc));
             el.querySelector('.btn-delete').addEventListener('click', async () => {
-              if (confirm('Remover "' + doc.title + '"?')) {
+              if (await showConfirmModal('Remover "' + doc.title + '"?')) {
                 await removeDocument(doc.id);
                 await renderDocs(activeFilter);
                 await renderFilters();

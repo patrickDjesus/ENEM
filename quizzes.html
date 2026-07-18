@@ -86,6 +86,22 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               Resposta Escrita
             </button>
+            <button type="button" class="btn-add-question btn-add-tf" id="btnAddTF">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              Verdadeiro / Falso
+            </button>
+            <button type="button" class="btn-add-question btn-add-fill" id="btnAddFill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/></svg>
+              Preencher Lacuna
+            </button>
+            <button type="button" class="btn-add-question btn-add-order" id="btnAddOrder">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              Ordenar Itens
+            </button>
+            <button type="button" class="btn-add-question btn-add-match" id="btnAddMatch">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Conectar Pares
+            </button>
           </div>
         </div>
 
@@ -207,7 +223,7 @@
             `;
             el.querySelector('.btn-play').addEventListener('click', () => playQuiz(q));
             el.querySelector('.btn-delete-quiz').addEventListener('click', async () => {
-              if (confirm('Remover quiz "' + q.title + '"?')) {
+              if (await showConfirmModal('Remover quiz "' + q.title + '"?')) {
                 await removeQuiz(q.id);
                 await renderQuizzes(activeFilter, activeDifficulty);
                 await renderFilters();
@@ -324,8 +340,169 @@
         updateCount();
       }
 
+      function addTrueFalseQuestion() {
+        questionIndex++;
+        const qNum = questionIndex;
+        const container = document.getElementById('questionsList');
+        const el = document.createElement('div');
+        el.className = 'question-item question-tf';
+        el.dataset.type = 'truefalse';
+        el.innerHTML = `
+          <div class="question-header">
+            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-tf">Verdadeiro / Falso</span></span>
+            <button type="button" class="btn-remove-question" title="Remover">&times;</button>
+          </div>
+          <div class="form-group">
+            <label>Pergunta</label>
+            <div class="textarea-wrapper">
+              <textarea class="q-text" rows="2" placeholder="Ex: O Brasil foi descoberto em 1500." required></textarea>
+            </div>
+          </div>
+          <div class="q-options">
+            <label class="q-option"><input type="radio" name="tf_${qNum}" value="true" required><span class="option-letter" style="background:rgba(0,184,148,0.1);color:#00b894">V</span><span class="option-text">Verdadeiro</span></label>
+            <label class="q-option"><input type="radio" name="tf_${qNum}" value="false"><span class="option-letter" style="background:rgba(225,112,85,0.1);color:#e17055">F</span><span class="option-text">Falso</span></label>
+          </div>
+          <p class="q-hint">Marque se a afirmacao e verdadeira ou falsa. Pontuacao Cebraspe: +1 acerto, -1 erro.</p>
+        `;
+        el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
+        container.appendChild(el);
+        updateCount();
+      }
+
+      function addFillBlankQuestion() {
+        questionIndex++;
+        const qNum = questionIndex;
+        const container = document.getElementById('questionsList');
+        const el = document.createElement('div');
+        el.className = 'question-item question-fill';
+        el.dataset.type = 'fillblank';
+        el.innerHTML = `
+          <div class="question-header">
+            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-fill">Preencher Lacuna</span></span>
+            <button type="button" class="btn-remove-question" title="Remover">&times;</button>
+          </div>
+          <div class="form-group">
+            <label>Texto com lacuna</label>
+            <div class="textarea-wrapper">
+              <textarea class="q-text" rows="2" placeholder="Use ___ para marcar a lacuna. Ex: O maior planeta do sistema solar e ___." required></textarea>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Resposta correta</label>
+            <input type="text" class="q-fill-answer" placeholder="Ex: Jupiter" required>
+          </div>
+          <p class="q-hint">Use tres underscores (___) no texto para indicar onde o aluno deve preencher.</p>
+        `;
+        el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
+        container.appendChild(el);
+        updateCount();
+      }
+
+      function addOrderingQuestion() {
+        questionIndex++;
+        const qNum = questionIndex;
+        const container = document.getElementById('questionsList');
+        const el = document.createElement('div');
+        el.className = 'question-item question-order';
+        el.dataset.type = 'ordering';
+        el.innerHTML = `
+          <div class="question-header">
+            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-order">Ordenar Itens</span></span>
+            <button type="button" class="btn-remove-question" title="Remover">&times;</button>
+          </div>
+          <div class="form-group">
+            <label>Instrucao</label>
+            <div class="textarea-wrapper">
+              <textarea class="q-text" rows="2" placeholder="Ex: Coloque os eventos em ordem cronologica." required></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Itens (na ordem CORRETA, de cima para baixo)</label>
+            <div class="order-items-list" data-qnum="${qNum}"></div>
+            <button type="button" class="btn-add-order-item" data-qnum="${qNum}">+ Adicionar Item</button>
+          </div>
+          <p class="q-hint">Adicione os itens na ordem correta. Eles serao embaralhados durante o quiz.</p>
+        `;
+        el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
+        container.appendChild(el);
+
+        const list = el.querySelector('.order-items-list');
+        let orderItemCount = 0;
+        function addOrderItem() {
+          orderItemCount++;
+          const item = document.createElement('div');
+          item.className = 'order-item-row';
+          item.innerHTML = `
+            <span class="order-grip" title="Arrastar">&#9776;</span>
+            <input type="text" class="order-item-input option-input" placeholder="Item ${orderItemCount}" required>
+            <button type="button" class="btn-remove-order-item" title="Remover">&times;</button>
+          `;
+          item.querySelector('.btn-remove-order-item').addEventListener('click', () => { item.remove(); });
+          list.appendChild(item);
+        }
+        addOrderItem();
+        addOrderItem();
+        addOrderItem();
+        el.querySelector('.btn-add-order-item').addEventListener('click', addOrderItem);
+        updateCount();
+      }
+
+      function addMatchingQuestion() {
+        questionIndex++;
+        const qNum = questionIndex;
+        const container = document.getElementById('questionsList');
+        const el = document.createElement('div');
+        el.className = 'question-item question-match';
+        el.dataset.type = 'matching';
+        el.innerHTML = `
+          <div class="question-header">
+            <span class="question-number">Questao ${qNum} <span class="q-type-badge badge-match">Conectar Pares</span></span>
+            <button type="button" class="btn-remove-question" title="Remover">&times;</button>
+          </div>
+          <div class="form-group">
+            <label>Instrucao</label>
+            <div class="textarea-wrapper">
+              <textarea class="q-text" rows="2" placeholder="Ex: Conecte cada conceito com sua definicao." required></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Pares (esquerda = direita)</label>
+            <div class="match-pairs-list" data-qnum="${qNum}"></div>
+            <button type="button" class="btn-add-match-pair" data-qnum="${qNum}">+ Adicionar Par</button>
+          </div>
+          <p class="q-hint">Cada linha define um par correto. Durante o quiz, os itens da direita serao embaralhados.</p>
+        `;
+        el.querySelector('.btn-remove-question').addEventListener('click', () => { el.remove(); updateCount(); });
+        container.appendChild(el);
+
+        const list = el.querySelector('.match-pairs-list');
+        let pairCount = 0;
+        function addMatchPair() {
+          pairCount++;
+          const pair = document.createElement('div');
+          pair.className = 'match-pair-row';
+          pair.innerHTML = `
+            <input type="text" class="match-left-input option-input" placeholder="Esquerda ${pairCount}" required>
+            <span class="match-arrow">&harr;</span>
+            <input type="text" class="match-right-input option-input" placeholder="Direita ${pairCount}" required>
+            <button type="button" class="btn-remove-match-pair" title="Remover">&times;</button>
+          `;
+          pair.querySelector('.btn-remove-match-pair').addEventListener('click', () => { pair.remove(); });
+          list.appendChild(pair);
+        }
+        addMatchPair();
+        addMatchPair();
+        addMatchPair();
+        el.querySelector('.btn-add-match-pair').addEventListener('click', addMatchPair);
+        updateCount();
+      }
+
       document.getElementById('btnAddMc').addEventListener('click', addMcQuestion);
       document.getElementById('btnAddWritten').addEventListener('click', addWrittenQuestion);
+      document.getElementById('btnAddTF').addEventListener('click', addTrueFalseQuestion);
+      document.getElementById('btnAddFill').addEventListener('click', addFillBlankQuestion);
+      document.getElementById('btnAddOrder').addEventListener('click', addOrderingQuestion);
+      document.getElementById('btnAddMatch').addEventListener('click', addMatchingQuestion);
 
       document.getElementById('quizForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -335,10 +512,34 @@
         for (const item of items) {
           const text = item.querySelector('.q-text').value.trim();
           if (!text) { alert('Preencha todas as perguntas.'); return; }
-          if (item.dataset.type === 'written') {
+          const type = item.dataset.type;
+          if (type === 'written') {
             const answer = item.querySelector('.q-answer-key').value.trim();
             if (!answer) { alert('Preencha a resposta modelo.'); return; }
             questions.push({ type: 'written', text, answer });
+          } else if (type === 'truefalse') {
+            const correct = item.querySelector('input[type="radio"]:checked');
+            if (!correct) { alert('Marque a resposta correta (V/F).'); return; }
+            questions.push({ type: 'truefalse', text, correct: correct.value === 'true' });
+          } else if (type === 'fillblank') {
+            const answer = item.querySelector('.q-fill-answer').value.trim();
+            if (!answer) { alert('Preencha a resposta correta.'); return; }
+            if (!text.includes('___')) { alert('Use ___ no texto para marcar a lacuna.'); return; }
+            questions.push({ type: 'fillblank', text, answer });
+          } else if (type === 'ordering') {
+            const inputs = item.querySelectorAll('.order-item-input');
+            const itemsList = Array.from(inputs).map(i => i.value.trim()).filter(v => v);
+            if (itemsList.length < 2) { alert('Adicione pelo menos 2 itens para ordenacao.'); return; }
+            questions.push({ type: 'ordering', text, items: itemsList });
+          } else if (type === 'matching') {
+            const pairs = [];
+            item.querySelectorAll('.match-pair-row').forEach(row => {
+              const l = row.querySelector('.match-left-input').value.trim();
+              const r = row.querySelector('.match-right-input').value.trim();
+              if (l && r) pairs.push([l, r]);
+            });
+            if (pairs.length < 2) { alert('Adicione pelo menos 2 pares.'); return; }
+            questions.push({ type: 'matching', text, pairs });
           } else {
             const opts = item.querySelectorAll('.option-input');
             const correct = item.querySelector('input[type="radio"]:checked');
@@ -365,17 +566,37 @@
 
         // Shuffle questions and track correct answers
         const shuffledQuestions = quiz.questions.map((q, origIdx) => {
-          if (q.type !== 'mc') return { ...q, _origIdx: origIdx };
-          const indices = q.options.map((_, i) => i);
-          const shuffledIndices = shuffleArray(indices);
-          const newCorrect = shuffledIndices.indexOf(q.correct);
-          return {
-            ...q,
-            _origIdx: origIdx,
-            options: shuffledIndices.map(i => q.options[i]),
-            correct: newCorrect,
-            _origCorrect: q.correct
-          };
+          if (q.type === 'mc') {
+            const indices = q.options.map((_, i) => i);
+            const shuffledIndices = shuffleArray(indices);
+            const newCorrect = shuffledIndices.indexOf(q.correct);
+            return {
+              ...q,
+              _origIdx: origIdx,
+              options: shuffledIndices.map(i => q.options[i]),
+              correct: newCorrect,
+              _origCorrect: q.correct
+            };
+          } else if (q.type === 'ordering') {
+            const indices = q.items.map((_, i) => i);
+            const shuffledIndices = shuffleArray(indices);
+            return {
+              ...q,
+              _origIdx: origIdx,
+              _shuffledItems: shuffledIndices.map(i => q.items[i]),
+              _correctOrder: q.items
+            };
+          } else if (q.type === 'matching') {
+            const rightIndices = q.pairs.map((_, i) => i);
+            const shuffledRight = shuffleArray(rightIndices);
+            return {
+              ...q,
+              _origIdx: origIdx,
+              _shuffledRight: shuffledRight.map(i => q.pairs[i][1]),
+              _correctPairs: q.pairs
+            };
+          }
+          return { ...q, _origIdx: origIdx };
         });
         const shuffled = shuffleArray(shuffledQuestions);
 
@@ -474,6 +695,308 @@
                 setTimeout(() => { current++; renderQuestion(); }, 300);
               });
             });
+          } else if (q.type === 'truefalse') {
+            document.getElementById('playContent').innerHTML = `
+              ${renderTimerHtml()}
+              <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
+              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-tf">V/F</span></div>
+              <p class="play-question">${escapeHtml(q.text)}</p>
+              <div class="play-options play-tf-options">
+                <button class="play-option play-tf-btn play-tf-true" data-value="true">
+                  <span class="option-letter" style="background:rgba(0,184,148,0.1);color:#00b894">V</span>
+                  <span class="option-text">Verdadeiro</span>
+                </button>
+                <button class="play-option play-tf-btn play-tf-false" data-value="false">
+                  <span class="option-letter" style="background:rgba(225,112,85,0.1);color:#e17055">F</span>
+                  <span class="option-text">Falso</span>
+                </button>
+              </div>
+            `;
+            const pauseBtn = document.getElementById('btnPauseTimer');
+            if (pauseBtn) {
+              pauseBtn.addEventListener('click', () => {
+                timerPaused = !timerPaused;
+                pauseBtn.innerHTML = timerPaused
+                  ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>'
+                  : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+                pauseBtn.title = timerPaused ? 'Continuar' : 'Pausar';
+              });
+            }
+            const tfBtns = document.querySelectorAll('.play-tf-btn');
+            let selectedTF = null;
+            tfBtns.forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const val = btn.dataset.value;
+                const label = val === 'true' ? 'Verdadeiro' : 'Falso';
+                const confirmed = await showConfirm(label);
+                if (!confirmed) return;
+                const isCorrect = (val === 'true') === q.correct;
+                if (isCorrect) score++;
+                answers.push({ question: current, selected: val, isCorrect, type: 'truefalse', text: q.text, correct: q.correct });
+                recordActivity();
+                tfBtns.forEach(b => {
+                  b.disabled = true;
+                  if (b.dataset.value === (q.correct ? 'true' : 'false')) b.classList.add('correct');
+                  else if (b === btn && !isCorrect) b.classList.add('wrong', 'shake');
+                });
+                setTimeout(() => { current++; renderQuestion(); }, 800);
+              });
+            });
+            if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
+            quizKeyboardHandler = function(e) {
+              if (document.querySelector('.confirm-overlay.show')) return;
+              if (['v','V','1','ArrowUp','ArrowLeft','w','W'].includes(e.key)) {
+                e.preventDefault();
+                tfBtns[0].click();
+              } else if (['f','F','2','ArrowDown','ArrowRight','s','S'].includes(e.key)) {
+                e.preventDefault();
+                tfBtns[1].click();
+              }
+            };
+            document.addEventListener('keydown', quizKeyboardHandler);
+          } else if (q.type === 'fillblank') {
+            const savedDraft = localStorage.getItem(_quizDraftKey(quiz.id, q._origIdx)) || '';
+            document.getElementById('playContent').innerHTML = `
+              ${renderTimerHtml()}
+              <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
+              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-fill">Lacuna</span></div>
+              <p class="play-question">${escapeHtml(q.text).replace(/___/g, '<span class="fill-blank-marker">___</span>')}</p>
+              <div class="fill-input-wrapper">
+                <label class="fill-label">Sua resposta:</label>
+                <input type="text" class="fill-blank-input" id="fillAnswer" placeholder="Digite a palavra que preenche a lacuna..." value="${escapeHtml(savedDraft)}" autocomplete="off">
+              </div>
+              <button class="btn-submit" id="btnCheckFill" style="margin-top:12px">Verificar</button>
+            `;
+            document.getElementById('fillAnswer').addEventListener('input', function() {
+              localStorage.setItem(_quizDraftKey(quiz.id, q._origIdx), this.value);
+            });
+            document.getElementById('btnCheckFill').addEventListener('click', () => {
+              const userAnswer = document.getElementById('fillAnswer').value.trim();
+              if (!userAnswer) { alert('Digite uma resposta.'); return; }
+              localStorage.removeItem(_quizDraftKey(quiz.id, q._origIdx));
+              document.getElementById('btnCheckFill').style.display = 'none';
+              document.getElementById('fillAnswer').disabled = true;
+              const isCorrect = userAnswer.toLowerCase() === q.answer.toLowerCase();
+              if (isCorrect) score++;
+              answers.push({ question: current, userAnswer, correctAnswer: q.answer, isCorrect, type: 'fillblank', text: q.text });
+              recordActivity();
+              const wrapper = document.querySelector('.fill-input-wrapper');
+              wrapper.innerHTML += `
+                <div class="fill-result ${isCorrect ? 'fill-correct' : 'fill-wrong'}">
+                  <span>${isCorrect ? '\u2713 Correto!' : '\u2717 Incorreto'}</span>
+                  ${!isCorrect ? '<span class="fill-correct-answer">Resposta: ' + escapeHtml(q.answer) + '</span>' : ''}
+                </div>
+              `;
+              setTimeout(() => { current++; renderQuestion(); }, 1200);
+            });
+            if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
+            quizKeyboardHandler = function(e) {
+              if (e.key === 'Enter' && !document.querySelector('.confirm-overlay.show')) {
+                const btn = document.getElementById('btnCheckFill');
+                if (btn) btn.click();
+              }
+            };
+            document.addEventListener('keydown', quizKeyboardHandler);
+          } else if (q.type === 'ordering') {
+            const items = [...q._shuffledItems];
+            let selectedOrderIdx = -1;
+            document.getElementById('playContent').innerHTML = `
+              ${renderTimerHtml()}
+              <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
+              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-order">Ordenacao</span></div>
+              <p class="play-question">${escapeHtml(q.text)}</p>
+              <p class="play-hint">Arraste os itens ou use os botoes para colocar na ordem correta.</p>
+              <div class="order-play-list" id="orderPlayList"></div>
+              <button class="btn-submit" id="btnSubmitOrder" style="margin-top:14px">Confirmar Ordem</button>
+            `;
+            const listEl = document.getElementById('orderPlayList');
+            function renderOrderItems() {
+              listEl.innerHTML = items.map((item, i) => `
+                <div class="order-play-item ${selectedOrderIdx === i ? 'order-selected' : ''}" data-idx="${i}" draggable="true">
+                  <span class="order-play-num">${i + 1}</span>
+                  <span class="order-play-text">${escapeHtml(item)}</span>
+                  <div class="order-play-arrows">
+                    <button type="button" class="order-arrow-btn order-up" data-idx="${i}" ${i === 0 ? 'disabled' : ''}>&#9650;</button>
+                    <button type="button" class="order-arrow-btn order-down" data-idx="${i}" ${i === items.length - 1 ? 'disabled' : ''}>&#9660;</button>
+                  </div>
+                </div>
+              `).join('');
+              listEl.querySelectorAll('.order-arrow-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  const idx = parseInt(btn.dataset.idx);
+                  if (btn.classList.contains('order-up') && idx > 0) {
+                    [items[idx], items[idx - 1]] = [items[idx - 1], items[idx]];
+                    renderOrderItems();
+                  } else if (btn.classList.contains('order-down') && idx < items.length - 1) {
+                    [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
+                    renderOrderItems();
+                  }
+                });
+              });
+              listEl.querySelectorAll('.order-play-item').forEach(el => {
+                el.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', el.dataset.idx); el.classList.add('order-dragging'); });
+                el.addEventListener('dragend', () => { el.classList.remove('order-dragging'); });
+                el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('order-dragover'); });
+                el.addEventListener('dragleave', () => { el.classList.remove('order-dragover'); });
+                el.addEventListener('drop', (e) => {
+                  e.preventDefault();
+                  el.classList.remove('order-dragover');
+                  const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                  const toIdx = parseInt(el.dataset.idx);
+                  if (fromIdx !== toIdx) {
+                    const moved = items.splice(fromIdx, 1)[0];
+                    items.splice(toIdx, 0, moved);
+                    renderOrderItems();
+                  }
+                });
+              });
+            }
+            renderOrderItems();
+            let orderConfirmed = false;
+            document.getElementById('pauseBtn') || null;
+            const pauseBtn = document.getElementById('btnPauseTimer');
+            if (pauseBtn) {
+              pauseBtn.addEventListener('click', () => {
+                timerPaused = !timerPaused;
+                pauseBtn.innerHTML = timerPaused
+                  ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>'
+                  : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+                pauseBtn.title = timerPaused ? 'Continuar' : 'Pausar';
+              });
+            }
+            document.getElementById('btnSubmitOrder').addEventListener('click', async () => {
+              if (orderConfirmed) return;
+              const confirmed = await showConfirm('Confirmar esta ordem?');
+              if (!confirmed) return;
+              orderConfirmed = true;
+              const isCorrect = items.every((item, i) => item === q._correctOrder[i]);
+              if (isCorrect) score++;
+              answers.push({ question: current, userOrder: [...items], correctOrder: q._correctOrder, isCorrect, type: 'ordering', text: q.text });
+              recordActivity();
+              document.getElementById('btnSubmitOrder').disabled = true;
+              listEl.querySelectorAll('.order-play-item').forEach((el, i) => {
+                if (items[i] === q._correctOrder[i]) el.classList.add('order-correct');
+                else el.classList.add('order-wrong');
+              });
+              setTimeout(() => { current++; renderQuestion(); }, 1200);
+            });
+            if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
+            quizKeyboardHandler = function(e) {
+              if (document.querySelector('.confirm-overlay.show') || orderConfirmed) return;
+              if (e.key === 'Enter') {
+                document.getElementById('btnSubmitOrder').click();
+              }
+            };
+            document.addEventListener('keydown', quizKeyboardHandler);
+          } else if (q.type === 'matching') {
+            const leftItems = q._correctPairs.map(p => p[0]);
+            const rightItems = [...q._shuffledRight];
+            const userMatches = {};
+            let selectedLeft = null;
+            document.getElementById('playContent').innerHTML = `
+              ${renderTimerHtml()}
+              <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
+              <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-match">Conexao</span></div>
+              <p class="play-question">${escapeHtml(q.text)}</p>
+              <p class="play-hint">Clique em um item da esquerda, depois no par correspondente da direita.</p>
+              <div class="match-play-grid" id="matchPlayGrid"></div>
+              <button class="btn-submit" id="btnSubmitMatch" style="margin-top:14px">Confirmar Conexoes</button>
+            `;
+            const gridEl = document.getElementById('matchPlayGrid');
+            function renderMatchItems() {
+              gridEl.innerHTML = `
+                <div class="match-play-col">
+                  ${leftItems.map((item, i) => `
+                    <div class="match-play-item match-left-item ${selectedLeft === i ? 'match-selected' : ''} ${userMatches[i] !== undefined ? 'match-paired' : ''}" data-side="left" data-idx="${i}">
+                      <span class="match-play-text">${escapeHtml(item)}</span>
+                      ${userMatches[i] !== undefined ? '<span class="match-play-arrow">&rarr;</span><span class="match-play-pair-text">' + escapeHtml(rightItems[userMatches[i]]) + '</span>' : ''}
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="match-play-col">
+                  ${rightItems.map((item, i) => {
+                    const used = Object.values(userMatches).includes(i);
+                    return `
+                      <div class="match-play-item match-right-item ${used ? 'match-used' : ''}" data-side="right" data-idx="${i}">
+                        <span class="match-play-text">${escapeHtml(item)}</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `;
+              gridEl.querySelectorAll('.match-left-item').forEach(el => {
+                el.addEventListener('click', () => {
+                  if (el.classList.contains('match-paired')) {
+                    const idx = parseInt(el.dataset.idx);
+                    delete userMatches[idx];
+                    selectedLeft = null;
+                    renderMatchItems();
+                    return;
+                  }
+                  selectedLeft = parseInt(el.dataset.idx);
+                  renderMatchItems();
+                });
+              });
+              gridEl.querySelectorAll('.match-right-item').forEach(el => {
+                el.addEventListener('click', () => {
+                  if (selectedLeft === null) return;
+                  const rightIdx = parseInt(el.dataset.idx);
+                  userMatches[selectedLeft] = rightIdx;
+                  selectedLeft = null;
+                  renderMatchItems();
+                });
+              });
+            }
+            renderMatchItems();
+            const pauseBtn = document.getElementById('btnPauseTimer');
+            if (pauseBtn) {
+              pauseBtn.addEventListener('click', () => {
+                timerPaused = !timerPaused;
+                pauseBtn.innerHTML = timerPaused
+                  ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21"/></svg>'
+                  : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+                pauseBtn.title = timerPaused ? 'Continuar' : 'Pausar';
+              });
+            }
+            let matchConfirmed = false;
+            document.getElementById('btnSubmitMatch').addEventListener('click', async () => {
+              if (matchConfirmed) return;
+              if (Object.keys(userMatches).length < leftItems.length) {
+                alert('Conecte todos os pares antes de confirmar.');
+                return;
+              }
+              const confirmed = await showConfirm('Confirmar estas conexoes?');
+              if (!confirmed) return;
+              matchConfirmed = true;
+              let correctPairs = 0;
+              leftItems.forEach((left, i) => {
+                const expectedRight = q._correctPairs[i][1];
+                const userRightIdx = userMatches[i];
+                const userRight = rightItems[userRightIdx];
+                const pairEl = gridEl.querySelector(`.match-left-item[data-idx="${i}"]`);
+                if (userRight === expectedRight) {
+                  correctPairs++;
+                  if (pairEl) pairEl.classList.add('match-correct');
+                } else {
+                  if (pairEl) pairEl.classList.add('match-wrong');
+                }
+              });
+              const totalPairs = leftItems.length;
+              if (correctPairs === totalPairs) score++;
+              answers.push({ question: current, userMatches: {...userMatches}, correctPairs: q._correctPairs, isCorrect: correctPairs === totalPairs, type: 'matching', text: q.text, totalPairs, correctCount: correctPairs });
+              recordActivity();
+              document.getElementById('btnSubmitMatch').disabled = true;
+              setTimeout(() => { current++; renderQuestion(); }, 1500);
+            });
+            if (quizKeyboardHandler) document.removeEventListener('keydown', quizKeyboardHandler);
+            quizKeyboardHandler = function(e) {
+              if (document.querySelector('.confirm-overlay.show') || matchConfirmed) return;
+              if (e.key === 'Enter') {
+                document.getElementById('btnSubmitMatch').click();
+              }
+            };
+            document.addEventListener('keydown', quizKeyboardHandler);
           } else {
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
@@ -596,6 +1119,18 @@
                       ${a.type === 'mc' ? `
                         <div class="review-your-answer">Sua resposta: ${String.fromCharCode(65 + a.selected)}) ${escapeHtml(a.options[a.selected])}</div>
                         <div class="review-correct-answer">Resposta correta: ${String.fromCharCode(65 + a.correct)}) ${escapeHtml(a.options[a.correct])}</div>
+                      ` : a.type === 'truefalse' ? `
+                        <div class="review-your-answer">Sua resposta: ${a.selected === 'true' ? 'Verdadeiro' : 'Falso'}</div>
+                        <div class="review-correct-answer">Resposta correta: ${a.correct ? 'Verdadeiro' : 'Falso'}</div>
+                      ` : a.type === 'fillblank' ? `
+                        <div class="review-your-answer">Sua resposta: ${escapeHtml(a.userAnswer || '(vazio)')}</div>
+                        <div class="review-correct-answer">Resposta correta: ${escapeHtml(a.correctAnswer)}</div>
+                      ` : a.type === 'ordering' ? `
+                        <div class="review-your-answer">Sua ordem: ${a.userOrder.map(i => escapeHtml(i)).join(' &rarr; ')}</div>
+                        <div class="review-correct-answer">Ordem correta: ${a.correctOrder.map(i => escapeHtml(i)).join(' &rarr; ')}</div>
+                      ` : a.type === 'matching' ? `
+                        <div class="review-your-answer">Acertou ${a.correctCount} de ${a.totalPairs} pares</div>
+                        <div class="review-correct-answer">Pares corretos: ${a.correctPairs.map(p => escapeHtml(p[0]) + ' &harr; ' + escapeHtml(p[1])).join(', ')}</div>
                       ` : `
                         <div class="review-your-answer">Sua resposta: ${escapeHtml(a.userAnswer || '(vazio)')}</div>
                         <div class="review-correct-answer">Resposta modelo: ${escapeHtml(a.correctAnswer)}</div>
@@ -620,6 +1155,18 @@
                 if (a.type === 'mc') {
                   txt += '   Sua resposta: ' + String.fromCharCode(65 + a.selected) + ') ' + a.options[a.selected] + '\n';
                   txt += '   Correta: ' + String.fromCharCode(65 + a.correct) + ') ' + a.options[a.correct] + '\n';
+                } else if (a.type === 'truefalse') {
+                  txt += '   Sua resposta: ' + (a.selected === 'true' ? 'Verdadeiro' : 'Falso') + '\n';
+                  txt += '   Correta: ' + (a.correct ? 'Verdadeiro' : 'Falso') + '\n';
+                } else if (a.type === 'fillblank') {
+                  txt += '   Sua resposta: ' + (a.userAnswer || '(vazio)') + '\n';
+                  txt += '   Correta: ' + a.correctAnswer + '\n';
+                } else if (a.type === 'ordering') {
+                  txt += '   Sua ordem: ' + a.userOrder.join(' -> ') + '\n';
+                  txt += '   Correta: ' + a.correctOrder.join(' -> ') + '\n';
+                } else if (a.type === 'matching') {
+                  txt += '   Acertou ' + a.correctCount + ' de ' + a.totalPairs + ' pares\n';
+                  txt += '   Pares corretos: ' + a.correctPairs.map(p => p[0] + ' <-> ' + p[1]).join(', ') + '\n';
                 } else {
                   txt += '   Sua resposta: ' + (a.userAnswer || '(vazio)') + '\n';
                   txt += '   Modelo: ' + a.correctAnswer + '\n';

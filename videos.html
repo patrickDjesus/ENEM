@@ -433,7 +433,7 @@
             el.querySelector('.btn-watch').addEventListener('click', () => watchVideo(vid));
             el.querySelector('.video-thumb').addEventListener('click', () => watchVideo(vid));
             el.querySelector('.btn-delete').addEventListener('click', async () => {
-              if (confirm('Remover "' + vid.title + '"?')) {
+              if (await showConfirmModal('Remover "' + vid.title + '"?')) {
                 await removeVideo(vid.id);
                 await renderVideos(activeFilter);
                 await renderFilters();
