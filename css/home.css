@@ -8,8 +8,8 @@ body {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   display: flex;
-  background: #0c0806;
-  color: #e8dcc8;
+  background: var(--bg-body, #0c0806);
+  color: var(--text-primary, #e8dcc8);
   overflow-x: hidden;
 }
 
@@ -235,19 +235,9 @@ body {
   margin-bottom: 32px;
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes potionBubble {
   0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
   50% { transform: translateY(-12px) scale(1.2); opacity: 0.3; }
-}
-
-@keyframes potionFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
 }
 
 .potion-card {
@@ -255,16 +245,10 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
+  transition: transform 0.3s ease;
 }
 
-.potion-card[data-delay="0"] { animation-delay: 0.1s; }
-.potion-card[data-delay="1"] { animation-delay: 0.18s; }
-.potion-card[data-delay="2"] { animation-delay: 0.26s; }
-.potion-card[data-delay="3"] { animation-delay: 0.34s; }
-
-.potion-card:hover { animation: potionFloat 2s ease-in-out infinite; opacity: 1; }
+.potion-card:hover { transform: translateY(-6px); }
 
 .potion-flask {
   width: 100px;
@@ -375,9 +359,6 @@ body {
   border-radius: 14px;
   position: relative;
   overflow: hidden;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.4s;
-  opacity: 0;
 }
 
 .pillar {
@@ -749,20 +730,12 @@ body {
   gap: 12px;
 }
 
-@keyframes questAppear {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
 .quest-card {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.3s ease;
-  animation: questAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  animation-delay: calc(var(--i, 0) * 0.08s + 0.4s);
+  transition: transform 0.15s ease, box-shadow 0.3s ease, opacity 0.3s ease;
 }
 
 .quest-card.search-dimmed { opacity: 0.3; pointer-events: none; }
