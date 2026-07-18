@@ -763,7 +763,7 @@ async function getSimulados() {
 }
 
 async function addSimulado(sim) {
-  sim.id = sim.id || Date.now();
+  sim.id = sim.id || (sb ? crypto.randomUUID() : Date.now());
   sim.created_at = sim.created_at || new Date().toISOString();
   sim.answers = sim.answers || {};
   sim.score = sim.score || 0;
