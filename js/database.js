@@ -378,7 +378,15 @@ async function addQuiz(quiz) {
 
   if (sb) {
     try {
-      const { error } = await sb.from('quizzes').insert(quiz);
+      const user = getCurrentUser();
+      const { error } = await sb.from('quizzes').insert({
+        id: quiz.id,
+        title: quiz.title,
+        subject: quiz.subject,
+        questions: quiz.questions,
+        user_id: user ? user.id : null,
+        created_at: quiz.created_at
+      });
       if (error) throw error;
       const quizzes = getLS('quizzes');
       quizzes.unshift(quiz);
