@@ -1,116 +1,177 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENEM - Dashboard</title>
+  <title>ENEM - Jornada do Saber</title>
   <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/home.css">
 </head>
-
 <body>
+
+  <div class="bg-layer">
+    <div class="bg-parchment"></div>
+    <div class="bg-mist bg-mist-1"></div>
+    <div class="bg-mist bg-mist-2"></div>
+    <div class="bg-vignette"></div>
+    <canvas class="bg-particles" id="bgParticles"></canvas>
+  </div>
 
   <div id="sidebarRoot"></div>
 
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <h1 id="greeting"></h1>
-        <p>Vamos continuar seus estudos?</p>
+        <div class="greeting-crest"></div>
+        <div>
+          <h1 id="greeting" class="greeting-text"></h1>
+          <p class="greeting-sub">Sua jornada continua, aventureiro</p>
+        </div>
       </div>
       <div class="topbar-right">
-        <div class="search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <button class="search-rune" id="searchTrigger">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input type="text" placeholder="Buscar conteúdo..." id="searchInput">
+        </button>
+        <div class="search-expand" id="searchExpand">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Buscar pergaminho..." id="searchInput" autocomplete="off">
+          <button class="search-close" id="searchClose">&times;</button>
         </div>
       </div>
     </header>
 
     <section class="stats">
-      <div class="stat-card">
-        <div class="stat-icon icon-docs">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14,2 14,8 20,8" />
-          </svg>
+      <div class="potion-card potion-docs" data-delay="0">
+        <div class="potion-flask">
+          <div class="potion-liquid" id="liquidDocs">
+            <div class="potion-bubble p1"></div>
+            <div class="potion-bubble p2"></div>
+            <div class="potion-bubble p3"></div>
+          </div>
+          <div class="potion-glow"></div>
+          <div class="potion-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          </div>
         </div>
-        <div class="stat-info">
-          <span class="stat-value" id="statDocs">0</span>
-          <span class="stat-label">Documentos</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon icon-vids">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="23,7 16,12 23,17" />
-            <rect x="1" y="5" width="15" height="14" rx="2" />
-          </svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value" id="statVids">0</span>
-          <span class="stat-label">Vídeos</span>
+        <div class="potion-info">
+          <span class="potion-value" id="statDocs">0</span>
+          <span class="potion-label">Pergaminhos</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon icon-notes">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
+      <div class="potion-card potion-vids" data-delay="1">
+        <div class="potion-flask">
+          <div class="potion-liquid" id="liquidVids">
+            <div class="potion-bubble p1"></div>
+            <div class="potion-bubble p2"></div>
+            <div class="potion-bubble p3"></div>
+          </div>
+          <div class="potion-glow"></div>
+          <div class="potion-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          </div>
         </div>
-        <div class="stat-info">
-          <span class="stat-value" id="statNotes">0</span>
-          <span class="stat-label">Anotações</span>
+        <div class="potion-info">
+          <span class="potion-value" id="statVids">0</span>
+          <span class="potion-label">Visoes</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon icon-quizzes">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
+      <div class="potion-card potion-notes" data-delay="2">
+        <div class="potion-flask">
+          <div class="potion-liquid" id="liquidNotes">
+            <div class="potion-bubble p1"></div>
+            <div class="potion-bubble p2"></div>
+            <div class="potion-bubble p3"></div>
+          </div>
+          <div class="potion-glow"></div>
+          <div class="potion-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
         </div>
-        <div class="stat-info">
-          <span class="stat-value" id="statQuizzes">0</span>
-          <span class="stat-label">Quizzes</span>
+        <div class="potion-info">
+          <span class="potion-value" id="statNotes">0</span>
+          <span class="potion-label">Grimorios</span>
+        </div>
+      </div>
+      <div class="potion-card potion-quizzes" data-delay="3">
+        <div class="potion-flask">
+          <div class="potion-liquid" id="liquidQuizzes">
+            <div class="potion-bubble p1"></div>
+            <div class="potion-bubble p2"></div>
+            <div class="potion-bubble p3"></div>
+          </div>
+          <div class="potion-glow"></div>
+          <div class="potion-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+        </div>
+        <div class="potion-info">
+          <span class="potion-value" id="statQuizzes">0</span>
+          <span class="potion-label">Provas</span>
         </div>
       </div>
     </section>
 
     <section class="streak-section" id="streakSection">
-      <div class="streak-card">
-        <div class="streak-left">
-          <div class="streak-flame" id="streakFlame">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 4-4 6-4 10a4 4 0 0 0 8 0c0-4-4-6-4-10z"/></svg>
+      <div class="pillar">
+        <div class="pillar-glow"></div>
+        <div class="pillar-stone"></div>
+        <div class="pillar-flame-wrap" id="streakFlame">
+          <div class="pillar-flame">
+            <div class="flame-core"></div>
+            <div class="flame-mid"></div>
+            <div class="flame-outer"></div>
           </div>
-          <div class="streak-info">
-            <span class="streak-count" id="streakCount">0</span>
-            <span class="streak-label">dias de ofensiva</span>
+          <div class="flame-particles"></div>
+        </div>
+        <div class="pillar-count">
+          <span class="pillar-number" id="streakCount">0</span>
+          <span class="pillar-label">dias</span>
+        </div>
+      </div>
+      <div class="streak-rune-ring">
+        <svg class="rune-ring-svg" viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="runeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#d4a056"/>
+              <stop offset="100%" style="stop-color:#c0392b"/>
+            </linearGradient>
+          </defs>
+          <circle class="rune-ring-bg" cx="60" cy="60" r="52"/>
+          <circle class="rune-ring-fill" id="streakGoalFillRing" cx="60" cy="60" r="52"/>
+          <circle class="rune-ring-inner" cx="60" cy="60" r="44"/>
+        </svg>
+        <div class="rune-ring-center">
+          <span class="rune-goal-num" id="streakGoalNum">0/3</span>
+          <span class="rune-goal-label">meta</span>
+        </div>
+        <input type="hidden" id="streakGoalFill" value="0">
+      </div>
+      <div class="streak-info-panel">
+        <div class="streak-info-top">
+          <h3 class="streak-title">Pilar da Ofensiva</h3>
+          <span class="streak-best" id="streakBest">Melhor recorde: 0 dias</span>
+        </div>
+        <div class="streak-bar-container">
+          <div class="streak-bar-label">Progresso diario</div>
+          <div class="streak-goal-bar">
+            <div class="streak-goal-fill" id="streakGoalFillBar" style="width:0%"></div>
           </div>
         </div>
-        <div class="streak-divider"></div>
-        <div class="streak-right">
-          <div class="streak-goal-header">
-            <span class="streak-goal-text">Meta diaria</span>
-            <span class="streak-goal-num" id="streakGoalNum">0/3</span>
-          </div>
-          <div class="streak-goal-bar">
-            <div class="streak-goal-fill" id="streakGoalFill" style="width:0%"></div>
-          </div>
-          <span class="streak-best" id="streakBest">Melhor recorde: 0 dias</span>
+        <div class="streak-runes-row">
+          <span class="rune">&#5765;</span>
+          <span class="rune">&#5765;</span>
+          <span class="rune">&#5765;</span>
+          <span class="rune">&#5765;</span>
+          <span class="rune">&#5765;</span>
+          <span class="rune">&#5765;</span>
+          <span class="rune">&#5765;</span>
         </div>
       </div>
     </section>
@@ -118,52 +179,47 @@
     <div class="content-grid">
       <section class="content-section">
         <div class="section-header">
-          <h2>Conteudo Recente</h2>
-          <a href="#" class="see-all">Ver tudo</a>
+          <h2 class="section-title">&#9876; Missões Recentes</h2>
+          <a href="#" class="see-all">Ver todas</a>
         </div>
-        <div id="recentContent" class="cards"></div>
+        <div id="recentContent" class="quest-board"></div>
         <div id="emptyState" class="empty-state">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14,2 14,8 20,8" />
-          </svg>
-          <p>Nenhum conteúdo adicionado ainda.</p>
-          <p>Comece adicionando documentos ou vídeos!</p>
+          <div class="empty-scroll">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          </div>
+          <p>Nenhuma missao registrada.</p>
+          <p>Comece sua jornada adicionando pergaminhos ou visoes!</p>
         </div>
       </section>
 
       <section class="content-section">
         <div class="section-header">
-          <h2>Por Matéria</h2>
+          <h2 class="section-title">&#9733; Arvore de Habilidades</h2>
         </div>
-        <div id="subjectBreakdown" class="subject-breakdown"></div>
+        <div id="subjectBreakdown" class="skill-tree"></div>
       </section>
     </div>
 
     <section class="content-section">
       <div class="section-header">
-        <h2>Quizzes</h2>
-        <a href="quizzes.html" class="see-all">Ver tudo</a>
+        <h2 class="section-title">&#9876; Provas de Coragem</h2>
+        <a href="quizzes.html" class="see-all">Ver todas</a>
       </div>
-      <div id="homeQuizzes" class="quiz-grid"></div>
+      <div id="homeQuizzes" class="quest-grid"></div>
       <div id="emptyQuizzes" class="empty-state" style="display:none;">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-        <p>Nenhum quiz criado ainda.</p>
+        <div class="empty-scroll">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <p>Nenhuma prova criada ainda.</p>
       </div>
     </section>
 
     <section class="content-section ranking-section" id="rankingSection">
       <div class="section-header">
-        <h2>Ranking</h2>
+        <h2 class="section-title">&#9813; Placa da Guilda</h2>
       </div>
       <div class="ranking-tabs">
-        <button class="ranking-tab active" data-tab="all">Global</button>
+        <button class="ranking-tab active" data-tab="all">Reino</button>
         <button class="ranking-tab" data-tab="week">Semanal</button>
       </div>
       <div class="ranking-list"></div>
@@ -181,21 +237,43 @@
       initEmojiPickers();
 
       const currentUser = getCurrentUser();
-      const userName = currentUser ? currentUser.name : 'Estudante';
+      const userName = currentUser ? currentUser.name : 'Aventureiro';
       const hour = new Date().getHours();
-      const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-      document.getElementById('greeting').textContent = greeting + ', ' + userName.split(' ')[0];
+      const greetings = [
+        { range: [5, 12], text: 'Aurora do Saber', emoji: '\u2600\uFE0F' },
+        { range: [12, 18], text: 'Mediodia Heroico', emoji: '\u2694\uFE0F' },
+        { range: [18, 22], text: 'Toque de Recolhida', emoji: '\uD83C\uDF19' },
+        { range: [22, 5], text: 'Vigilia Noturna', emoji: '\u2B50' }
+      ];
+      const g = greetings.find(gr => hour >= gr.range[0] && hour < gr.range[1]) || greetings[0];
+      document.getElementById('greeting').textContent = g.text + ', ' + userName.split(' ')[0] + ' ' + g.emoji;
 
-      // Streak
       const streakData = updateStreakOnLogin();
       document.getElementById('streakCount').textContent = streakData.streak;
       document.getElementById('streakGoalNum').textContent = streakData.dailyDone + '/' + streakData.dailyGoal;
       const goalPct = Math.min(100, Math.round((streakData.dailyDone / streakData.dailyGoal) * 100));
-      document.getElementById('streakGoalFill').style.width = goalPct + '%';
+      document.getElementById('streakGoalFillBar').style.width = goalPct + '%';
+      document.getElementById('streakGoalFill').value = goalPct;
+      const circumference = 2 * Math.PI * 52;
+      const ringFill = document.getElementById('streakGoalFillRing');
+      if (ringFill) {
+        ringFill.style.strokeDasharray = circumference;
+        ringFill.style.strokeDashoffset = circumference;
+        setTimeout(() => {
+          ringFill.style.strokeDashoffset = circumference - (circumference * goalPct / 100);
+        }, 600);
+      }
       document.getElementById('streakBest').textContent = 'Melhor recorde: ' + streakData.bestStreak + ' dias';
       if (streakData.streak > 0) {
         document.getElementById('streakFlame').classList.add('active');
+        const pillar = document.querySelector('.pillar');
+        if (streakData.streak >= 14) pillar.classList.add('legendary');
+        else if (streakData.streak >= 7) pillar.classList.add('epic');
+        else if (streakData.streak >= 3) pillar.classList.add('rare');
       }
+      const runes = document.querySelectorAll('.streak-runes-row .rune');
+      const litRunes = Math.min(runes.length, Math.floor(streakData.streak));
+      for (let i = 0; i < litRunes; i++) runes[i].classList.add('lit');
 
       const docs = await getDocuments();
       const vids = await getVideos();
@@ -208,7 +286,16 @@
       document.getElementById('statNotes').textContent = totalNotes;
       document.getElementById('statQuizzes').textContent = quizzes.length;
 
-      // Recent content
+      const maxStat = Math.max(docs.length, vids.length, totalNotes, quizzes.length, 1);
+      function setLiquid(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.style.setProperty('--fill-pct', Math.min(100, Math.round((val / maxStat) * 100)) + '%');
+      }
+      setLiquid('liquidDocs', docs.length);
+      setLiquid('liquidVids', vids.length);
+      setLiquid('liquidNotes', totalNotes);
+      setLiquid('liquidQuizzes', quizzes.length);
+
       const all = [
         ...docs.map(d => ({ ...d, _type: 'doc' })),
         ...vids.map(v => ({ ...v, _type: 'video' }))
@@ -219,89 +306,113 @@
       if (all.length === 0) {
         es.style.display = 'flex';
       } else {
-        all.forEach(item => {
+        all.forEach((item, idx) => {
           const s = SUBJECTS[item.subject];
           const pinned = isPinned(item._type, item.id);
           const timeEst = estimateTime(item._type, item);
           const card = document.createElement('div');
-          card.className = 'card ripple-container';
+          card.className = 'mosaic-card quest-card';
           card.dataset.searchText = (item.title + ' ' + (item.description || '') + ' ' + (s ? s.name : '')).toLowerCase();
+          card.style.setProperty('--i', idx);
           card.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div class="card-badge">${item._type === 'doc' ? 'PDF' : 'Video'}</div>
-              <button class="pin-btn ${pinned ? 'pinned' : ''}" data-pin-type="${item._type}" data-pin-id="${item.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
-            </div>
-            <h3>${item.title}</h3>
-            <p>${item.description || (s ? s.name : '')}</p>
-            <div class="time-estimate">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-              ~${timeEst} min
+            <div class="quest-card-inner">
+              <div class="quest-card-glow"></div>
+              <div class="quest-top">
+                <div class="quest-badge">${item._type === 'doc' ? '\uD83D\uDCDC Pergaminho' : '\uD83D\uDCFA Visao'}</div>
+                <button class="pin-btn ${pinned ? 'pinned' : ''}" data-pin-type="${item._type}" data-pin-id="${item.id}" title="Fixar">${pinned ? '\u{1F4CC}' : '\u{1F4CE}'}</button>
+              </div>
+              <h3 class="quest-title">${item.title}</h3>
+              <p class="quest-desc">${item.description || (s ? s.name : '')}</p>
+              <div class="quest-bottom">
+                <div class="quest-time">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                  ~${timeEst} min
+                </div>
+                <div class="quest-actions">
+                  <button class="quest-action-btn" title="${item._type === 'doc' ? 'Ler Pergaminho' : 'Ver Visao'}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+                  </button>
+                </div>
+              </div>
             </div>
           `;
           rc.appendChild(card);
         });
       }
 
-      // Subject breakdown
       const sb = document.getElementById('subjectBreakdown');
       const counts = {};
       docs.forEach(d => { counts[d.subject] = (counts[d.subject] || 0) + 1; });
       vids.forEach(v => { counts[v.subject] = (counts[v.subject] || 0) + 1; });
       const maxCount = Math.max(1, ...Object.values(counts));
-      Object.keys(SUBJECTS).forEach(key => {
+      const skillNodes = document.createElement('div');
+      skillNodes.className = 'skill-nodes';
+      Object.keys(SUBJECTS).forEach((key, i) => {
         const s = SUBJECTS[key];
         const count = counts[key] || 0;
         const pct = Math.round((count / maxCount) * 100);
         const el = document.createElement('div');
-        el.className = 'subject-row';
+        el.className = 'subject-row skill-node';
         el.innerHTML = `
-          <div class="subject-dot"></div>
+          <div class="skill-dot"></div>
           <span class="subject-name">${s.name}</span>
           <div class="subject-bar"><div class="subject-bar-fill"></div></div>
           <span class="subject-count">${count}</span>
         `;
         el.addEventListener('mouseenter', () => {
-          el.querySelector('.subject-dot').style.background = s.color;
+          el.querySelector('.skill-dot').style.background = s.color;
+          el.querySelector('.skill-dot').style.boxShadow = '0 0 16px ' + s.color;
           el.querySelector('.subject-bar-fill').style.background = s.color;
           el.querySelector('.subject-bar-fill').style.width = pct + '%';
         });
         el.addEventListener('mouseleave', () => {
-          el.querySelector('.subject-dot').style.background = '';
+          el.querySelector('.skill-dot').style.background = '';
+          el.querySelector('.skill-dot').style.boxShadow = '';
           el.querySelector('.subject-bar-fill').style.background = '';
           el.querySelector('.subject-bar-fill').style.width = '0%';
         });
         sb.appendChild(el);
+        if (i < Object.keys(SUBJECTS).length - 1) {
+          const line = document.createElement('div');
+          line.className = 'skill-connector';
+          sb.appendChild(line);
+        }
       });
 
-      // Quizzes
       const qg = document.getElementById('homeQuizzes');
       const eq = document.getElementById('emptyQuizzes');
       const topQuizzes = quizzes.slice(0, 3);
       if (topQuizzes.length === 0) {
         eq.style.display = 'flex';
       } else {
-        topQuizzes.forEach(q => {
+        topQuizzes.forEach((q, idx) => {
           const s = SUBJECTS[q.subject];
           const card = document.createElement('div');
-          card.className = 'quiz-card ripple-container';
+          card.className = 'mosaic-card quest-card';
+          card.style.setProperty('--i', idx);
           card.innerHTML = `
-            <div class="quiz-info">
-              <span class="quiz-subject">${s ? s.name : 'Geral'}</span>
-              <h3>${q.title}</h3>
-              <p>${q.questions.length} questoes</p>
-            </div>
-            <div class="quiz-action">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+            <div class="quest-card-inner">
+              <div class="quest-card-glow"></div>
+              <div class="quest-top">
+                <div class="quest-badge">\u2694\uFE0F Prova</div>
+              </div>
+              <h3 class="quest-title">${q.title}</h3>
+              <p class="quest-desc">${s ? s.name : 'Geral'} &middot; ${q.questions.length} desafios</p>
+              <div class="quest-bottom">
+                <div class="quest-time">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+                  Enfrentar
+                </div>
+              </div>
             </div>
           `;
           qg.appendChild(card);
         });
       }
 
-      // Search with highlight
       document.getElementById('searchInput').addEventListener('input', function () {
         const q = this.value.toLowerCase().trim();
-        const cards = rc.querySelectorAll('.card');
+        const cards = rc.querySelectorAll('.mosaic-card');
         cards.forEach(c => {
           c.classList.remove('search-highlight', 'search-dimmed');
           if (q && c.dataset.searchText && c.dataset.searchText.includes(q)) {
@@ -312,7 +423,6 @@
         });
       });
 
-      // Pin buttons
       rc.addEventListener('click', async function (e) {
         const pinBtn = e.target.closest('.pin-btn');
         if (pinBtn) {
@@ -325,7 +435,6 @@
         }
       });
 
-      // Ranking section
       const rankSection = document.getElementById('rankingSection');
       if (rankSection) {
         let rankTab = 'all';
@@ -340,11 +449,12 @@
           }
           ranking.forEach((r, i) => {
             const el = document.createElement('div');
-            el.className = 'ranking-item';
+            el.className = 'ranking-item' + (i < 3 ? ' rank-top rank-' + ['gold','silver','bronze'][i] : '');
+            const icons = ['\uD83D\uDC51', '\u2694\uFE0F', '\uD83D\uDEE1\uFE0F'];
             el.innerHTML = `
-              <div class="ranking-pos">${i + 1}</div>
+              <div class="ranking-pos">${i < 3 ? icons[i] : (i + 1)}</div>
               <span class="ranking-name">${r.user_name}</span>
-              <span class="ranking-quizzes">${r.total_quizzes} quiz${r.total_quizzes !== 1 ? 'zes' : ''}</span>
+              <span class="ranking-quizzes">${r.total_quizzes} prova${r.total_quizzes !== 1 ? 's' : ''}</span>
               <span class="ranking-score">${r.avg_pct}%</span>
             `;
             list.appendChild(el);
@@ -359,8 +469,63 @@
         });
         renderRanking('all');
       }
+
+      document.querySelectorAll('.mosaic-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          card.style.transform = `perspective(600px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) scale(1.02)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(600px) rotateY(0deg) rotateX(0deg) scale(1)';
+        });
+      });
+
+      document.getElementById('searchTrigger').addEventListener('click', () => {
+        document.getElementById('searchExpand').classList.add('open');
+        document.getElementById('searchInput').focus();
+      });
+      document.getElementById('searchClose').addEventListener('click', () => {
+        document.getElementById('searchExpand').classList.remove('open');
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchInput').dispatchEvent(new Event('input'));
+      });
+
+      const canvas = document.getElementById('bgParticles');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let w, h, particles = [];
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+        for (let i = 0; i < 40; i++) {
+          particles.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 2 + 0.5,
+            dx: (Math.random() - 0.5) * 0.3,
+            dy: -Math.random() * 0.4 - 0.1,
+            o: Math.random() * 0.5 + 0.2
+          });
+        }
+        function drawParticles() {
+          ctx.clearRect(0, 0, w, h);
+          particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(212,160,86,' + p.o + ')';
+            ctx.fill();
+            p.x += p.dx;
+            p.y += p.dy;
+            if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+            if (p.x < -10 || p.x > w + 10) p.x = Math.random() * w;
+          });
+          requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+      }
     })();
   </script>
 </body>
-
 </html>
