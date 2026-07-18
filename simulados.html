@@ -154,9 +154,7 @@
           started_at: new Date().toISOString()
         };
         await addSimulado(sim);
-        const sims = await getSimulados();
-        currentSim = sims[0];
-        startPlay(currentSim);
+        startPlay(sim);
       }
 
       /* ==================== LIST VIEW ==================== */
@@ -200,14 +198,14 @@
 
         list.querySelectorAll('.btn-continue').forEach(btn => {
           btn.addEventListener('click', () => {
-            const sim = sims.find(s => s.id === parseInt(btn.dataset.id));
+            const sim = sims.find(s => String(s.id) === btn.dataset.id);
             if (sim) startPlay(sim);
           });
         });
 
         list.querySelectorAll('.btn-view').forEach(btn => {
           btn.addEventListener('click', () => {
-            const sim = sims.find(s => s.id === parseInt(btn.dataset.id));
+            const sim = sims.find(s => String(s.id) === btn.dataset.id);
             if (sim) showResult(sim);
           });
         });
@@ -215,7 +213,7 @@
         list.querySelectorAll('.btn-delete').forEach(btn => {
           btn.addEventListener('click', async () => {
             showConfirm('Excluir esta sessão?', async () => {
-              await removeSimulado(parseInt(btn.dataset.id));
+              await removeSimulado(btn.dataset.id);
               await renderSimList();
               showToast('Sessão excluída', 'success');
             });
@@ -226,6 +224,7 @@
       /* ==================== PLAY MODE ==================== */
       function startPlay(sim) {
         currentSim = sim;
+        currentSim.answers = currentSim.answers || {};
         questions = sim.questions || [];
         const savedTime = sim.time_spent || 0;
         timerSeconds = sim.time_limit - savedTime;
@@ -322,7 +321,7 @@
           cell.className = 'sim-map-cell';
           cell.textContent = displayIdx + 1;
           if (qi === currentIdx) cell.classList.add('current');
-          if (currentSim.answers[qi]) cell.classList.add('answered');
+          if (currentSim.answers && currentSim.answers[qi]) cell.classList.add('answered');
           cell.addEventListener('click', () => { currentIdx = qi; renderCurrentQuestion(); renderMap(); });
           grid.appendChild(cell);
         });
@@ -338,7 +337,7 @@
         const qArea = q._area || mapSubjectToArea(q.subject);
         const areaInfo = MASMORRA_AREAS[qArea] || { name: qArea, icon: '' };
         const s = SUBJECTS[q.subject] || { name: q.subject, color: '#999', colorLight: 'rgba(153,153,153,0.12)' };
-        const answered = currentSim.answers[currentIdx];
+        const answered = (currentSim.answers || {})[currentIdx];
 
         const diffLabels = { easy: 'Fácil', medium: 'Média', hard: 'Difícil' };
         const diffBadge = `<span class="sim-q-diff sim-q-diff-${q.difficulty || 'medium'}">${diffLabels[q.difficulty] || 'Média'}</span>`;
@@ -536,7 +535,7 @@
 
         let answersGrid = '';
         (sim.questions || questions).forEach((q, idx) => {
-          const ans = sim.answers[idx];
+          const ans = (sim.answers || {})[idx];
           const cls = ans && ans.isCorrect ? 'correct' : 'wrong';
           const icon = ans && ans.isCorrect
             ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
@@ -546,7 +545,7 @@
 
         let reviewHtml = '';
         (sim.questions || questions).forEach((q, idx) => {
-          const ans = sim.answers[idx];
+          const ans = (sim.answers || {})[idx];
           if (ans && !ans.isCorrect) {
             const letters = ['A', 'B', 'C', 'D', 'E'];
             const opts = q.options || [];
