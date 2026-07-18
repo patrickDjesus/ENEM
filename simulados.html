@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENEM - Simulados</title>
+  <title>ENEM - Masmorra</title>
   <link rel="icon" href="img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/fantasy-base.css">
+  <link rel="stylesheet" href="css/fantasy-base.css">
   <link rel="stylesheet" href="css/simulados.css">
 </head>
 <body>
@@ -19,70 +19,54 @@
   <main class="main" id="mainView">
     <header class="topbar">
       <div class="topbar-left">
-        <h1>Simulados</h1>
-        <p>Simule o ENEM com seus quizzes e acompanhe seu desempenho por area</p>
-      </div>
-      <div class="topbar-right">
-        <button class="btn-primary" id="btnCreate">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo Simulado
-        </button>
+        <h1>Masmorra</h1>
+        <p>Escolha sua dificuldade e enfrente o desafio</p>
       </div>
     </header>
 
-    <div id="simList" class="sim-list"></div>
-    <div id="emptyState" class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <p>Nenhum simulado criado ainda.</p>
-      <p>Clique em "Novo Simulado" para começar.</p>
+    <!-- DIFFICULTY SELECTION -->
+    <div class="masm-diff-grid" id="diffGrid">
+      <div class="masm-diff-card" data-diff="facil">
+        <div class="masm-diff-icon">⚔️</div>
+        <h3 class="masm-diff-title">Fácil</h3>
+        <p class="masm-diff-desc">15 questões · 60 min</p>
+        <p class="masm-diff-detail">10 fáceis · 5 médias · 0 difíceis</p>
+        <button class="btn-masm-diff">Entrar</button>
+      </div>
+      <div class="masm-diff-card" data-diff="medio">
+        <div class="masm-diff-icon">🛡️</div>
+        <h3 class="masm-diff-title">Médio</h3>
+        <p class="masm-diff-desc">20 questões · 90 min</p>
+        <p class="masm-diff-detail">6 fáceis · 10 médias · 4 difíceis</p>
+        <button class="btn-masm-diff">Entrar</button>
+      </div>
+      <div class="masm-diff-card" data-diff="dificil">
+        <div class="masm-diff-icon">💀</div>
+        <h3 class="masm-diff-title">Difícil</h3>
+        <p class="masm-diff-desc">30 questões · 120 min</p>
+        <p class="masm-diff-detail">5 fáceis · 10 médias · 15 difíceis</p>
+        <button class="btn-masm-diff">Entrar</button>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="masm-history">
+      <h2 class="section-title">&#9776; Histórico</h2>
+      <div id="simList" class="sim-list"></div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <p>Nenhuma sessão ainda.</p>
+        <p>Escolha uma dificuldade acima para começar!</p>
+      </div>
     </div>
   </main>
-
-  <!-- MODAL CRIAR SIMULADO -->
-  <div class="modal-overlay" id="createOverlay">
-    <div class="modal sim-create-modal">
-      <div class="modal-header">
-        <h2>Novo Simulado</h2>
-        <button class="modal-close" id="createClose">&times;</button>
-      </div>
-
-      <div class="form-group">
-        <label for="simTitle">Título do Simulado</label>
-        <input type="text" id="simTitle" placeholder="Ex: Simulado ENEM 2024" value="Simulado ENEM">
-      </div>
-
-      <div class="sim-timer-config">
-        <label>Tempo Limite</label>
-        <div class="sim-timer-slider">
-          <input type="range" id="simTimer" min="3600" max="19800" step="1800" value="19800">
-          <span class="sim-timer-value" id="simTimerValue">5:30</span>
-        </div>
-      </div>
-
-      <div class="sim-select-all">
-        <input type="checkbox" id="selectAllQuizzes">
-        <label for="selectAllQuizzes">Selecionar todos</label>
-      </div>
-
-      <div class="sim-quiz-select" id="quizSelectList"></div>
-
-      <div class="sim-area-dist" id="areaDist" style="display:none;">
-        <h4>Distribuição por Área</h4>
-        <div class="sim-area-dist-grid" id="areaDistGrid"></div>
-      </div>
-
-      <button class="btn-primary" id="btnStartSim" disabled style="width:100%;justify-content:center;">
-        Iniciar Simulado
-      </button>
-    </div>
-  </div>
 
   <!-- PLAY MODE -->
   <div class="sim-play-overlay" id="playOverlay">
     <div class="sim-play-header">
-      <span class="sim-play-title" id="playTitle">Simulado ENEM</span>
+      <span class="sim-play-title" id="playTitle">Masmorra</span>
       <div class="sim-timer-row">
-        <span class="sim-timer" id="simTimerDisplay">05:30:00</span>
+        <span class="sim-timer" id="simTimerDisplay">01:00:00</span>
         <button class="sim-timer-btn" id="btnPauseTimer" title="Pausar">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
         </button>
@@ -124,6 +108,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/database.js"></script>
+  <script src="js/masmorra.js"></script>
   <script src="js/shared.js"></script>
   <script>
     (async function() {
@@ -132,7 +117,6 @@
       initSidebar();
 
       const user = getCurrentUser();
-      const allQuizzes = await getQuizzes();
 
       let currentSim = null;
       let questions = [];
@@ -143,7 +127,39 @@
       let timerPaused = false;
       let autoSaveInterval = null;
 
-      // --- LIST VIEW ---
+      /* ==================== DIFFICULTY SELECTION ==================== */
+      document.querySelectorAll('.masm-diff-card').forEach(card => {
+        card.querySelector('.btn-masm-diff').addEventListener('click', () => {
+          const diff = card.dataset.diff;
+          startNewSession(diff);
+        });
+      });
+
+      async function startNewSession(difficulty) {
+        const config = MASMORRA_DIFFICULTIES[difficulty];
+        if (!config) return;
+
+        const qs = getMasmorraQuestions(difficulty);
+        if (qs.length === 0) { showToast('Nenhuma questão disponível', 'error'); return; }
+
+        const sim = {
+          user_id: user ? user.id : null,
+          title: 'Masmorra - ' + config.label,
+          difficulty: difficulty,
+          questions: qs,
+          answers: {},
+          time_limit: config.timeLimit,
+          time_spent: 0,
+          status: 'active',
+          started_at: new Date().toISOString()
+        };
+        await addSimulado(sim);
+        const sims = await getSimulados();
+        currentSim = sims[0];
+        startPlay(currentSim);
+      }
+
+      /* ==================== LIST VIEW ==================== */
       async function renderSimList() {
         const sims = await getSimulados();
         const list = document.getElementById('simList');
@@ -156,16 +172,17 @@
           const answered = sim.answers ? Object.keys(sim.answers).length : 0;
           const card = document.createElement('div');
           card.className = 'sim-card ' + sim.status;
+          const diffConfig = MASMORRA_DIFFICULTIES[sim.difficulty] || {};
+          const diffLabel = diffConfig.label || 'Masmorra';
+          const diffIcon = diffConfig.icon || '⚔️';
           card.innerHTML = `
             <div class="sim-left">
-              <div class="sim-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
+              <div class="sim-icon">${diffIcon}</div>
               <div class="sim-info">
-                <div class="sim-title">${sim.title || 'Simulado'}</div>
+                <div class="sim-title">${diffLabel}</div>
                 <div class="sim-meta">
                   <span class="sim-badge ${isComplete ? 'badge-completed' : 'badge-active'}">${isComplete ? 'Completo' : 'Em andamento'}</span>
-                  ${isComplete ? '<span class="sim-badge badge-pct">' + sim.pct + '%</span>' : '<span class="sim-progress-text">' + answered + '/' + (sim.total || '?') + ' respondidas</span>'}
+                  ${isComplete ? '<span class="sim-badge badge-pct">' + (sim.pct || 0) + '%</span>' : '<span class="sim-progress-text">' + answered + '/' + (sim.total || sim.questions ? sim.questions.length : '?') + ' respondidas</span>'}
                   <span>${formatDate(sim.created_at)}</span>
                 </div>
               </div>
@@ -184,7 +201,7 @@
         list.querySelectorAll('.btn-continue').forEach(btn => {
           btn.addEventListener('click', () => {
             const sim = sims.find(s => s.id === parseInt(btn.dataset.id));
-            if (sim) resumeSimulado(sim);
+            if (sim) startPlay(sim);
           });
         });
 
@@ -197,157 +214,16 @@
 
         list.querySelectorAll('.btn-delete').forEach(btn => {
           btn.addEventListener('click', async () => {
-            showConfirm('Excluir este simulado?', async () => {
+            showConfirm('Excluir esta sessão?', async () => {
               await removeSimulado(parseInt(btn.dataset.id));
               await renderSimList();
-              showToast('Simulado excluído', 'success');
+              showToast('Sessão excluída', 'success');
             });
           });
         });
       }
 
-      // --- CREATE MODAL ---
-      const createOverlay = document.getElementById('createOverlay');
-      document.getElementById('btnCreate').addEventListener('click', () => {
-        renderQuizSelect();
-        createOverlay.classList.add('show');
-      });
-      document.getElementById('createClose').addEventListener('click', () => createOverlay.classList.remove('show'));
-      createOverlay.addEventListener('click', e => { if (e.target === createOverlay) createOverlay.classList.remove('show'); });
-
-      const timerSlider = document.getElementById('simTimer');
-      const timerValue = document.getElementById('simTimerValue');
-      timerSlider.addEventListener('input', () => {
-        const v = parseInt(timerSlider.value);
-        const h = Math.floor(v / 3600);
-        const m = Math.floor((v % 3600) / 60);
-        timerValue.textContent = h + ':' + String(m).padStart(2, '0');
-      });
-
-      function renderQuizSelect() {
-        const list = document.getElementById('quizSelectList');
-        list.innerHTML = '';
-        if (allQuizzes.length === 0) {
-          list.innerHTML = '<p style="font-size:13px;color:var(--text-dim);text-align:center;padding:16px;">Nenhum quiz disponível. Crie quizzes primeiro.</p>';
-          return;
-        }
-        allQuizzes.forEach(q => {
-          const qCount = q.questions ? q.questions.length : 0;
-          const opt = document.createElement('label');
-          opt.className = 'sim-quiz-option';
-          opt.innerHTML = `
-            <input type="checkbox" value="${q.id}" class="sim-quiz-cb">
-            <div class="sim-quiz-option-info">
-              <div class="sim-quiz-option-title">${escapeHtml(q.title)}</div>
-              <div class="sim-quiz-option-meta">
-                <span>${SUBJECTS[q.subject] ? SUBJECTS[q.subject].name : q.subject}</span>
-                <span>${q.difficulty || 'medio'}</span>
-                <span>${qCount} questões</span>
-              </div>
-            </div>`;
-          const cb = opt.querySelector('input');
-          cb.addEventListener('change', () => {
-            opt.classList.toggle('selected', cb.checked);
-            updateSelectAll();
-            updateAreaDist();
-          });
-          list.appendChild(opt);
-        });
-      }
-
-      document.getElementById('selectAllQuizzes').addEventListener('change', function() {
-        document.querySelectorAll('.sim-quiz-cb').forEach(cb => {
-          cb.checked = this.checked;
-          cb.closest('.sim-quiz-option').classList.toggle('selected', this.checked);
-        });
-        updateAreaDist();
-      });
-
-      function updateSelectAll() {
-        const cbs = document.querySelectorAll('.sim-quiz-cb');
-        const allChecked = cbs.length > 0 && Array.from(cbs).every(cb => cb.checked);
-        document.getElementById('selectAllQuizzes').checked = allChecked;
-      }
-
-      function getSelectedQuizIds() {
-        return Array.from(document.querySelectorAll('.sim-quiz-cb:checked')).map(cb => parseInt(cb.value));
-      }
-
-      function updateAreaDist() {
-        const ids = getSelectedQuizIds();
-        const areaCounts = { linguagens: 0, humanas: 0, natureza: 0, matematica: 0 };
-        ids.forEach(id => {
-          const q = allQuizzes.find(x => x.id === id);
-          if (q && q.questions) {
-            q.questions.forEach(question => {
-              const area = mapSubjectToArea(q.subject);
-              areaCounts[area] = (areaCounts[area] || 0) + 1;
-            });
-          }
-        });
-        const total = Object.values(areaCounts).reduce((a, b) => a + b, 0);
-        const dist = document.getElementById('areaDist');
-        const grid = document.getElementById('areaDistGrid');
-        const startBtn = document.getElementById('btnStartSim');
-
-        if (ids.length === 0) { dist.style.display = 'none'; startBtn.disabled = true; return; }
-        dist.style.display = '';
-        startBtn.disabled = false;
-
-        const colors = { linguagens: '#fd79a8', humanas: '#b2bec3', natureza: '#00b894', matematica: '#6c5ce7' };
-        grid.innerHTML = '';
-        for (const [area, count] of Object.entries(areaCounts)) {
-          if (count === 0) continue;
-          const pct = total > 0 ? (count / total * 100) : 0;
-          grid.innerHTML += `
-            <div class="sim-area-dist-item">
-              <div class="sim-area-dist-dot" style="background:${colors[area]}"></div>
-              <span>${SIMULADO_AREAS[area].name}</span>
-              <div class="sim-area-dist-bar"><div class="sim-area-dist-fill" style="width:${pct}%;background:${colors[area]}"></div></div>
-              <span class="sim-area-dist-count">${count}</span>
-            </div>`;
-        }
-      }
-
-      // --- START SIMULADO ---
-      document.getElementById('btnStartSim').addEventListener('click', async () => {
-        const ids = getSelectedQuizIds();
-        if (ids.length === 0) return;
-        const title = document.getElementById('simTitle').value.trim() || 'Simulado ENEM';
-        const timeLimit = parseInt(timerSlider.value);
-
-        const allQs = [];
-        ids.forEach(id => {
-          const quiz = allQuizzes.find(x => x.id === id);
-          if (quiz && quiz.questions) {
-            const shuffled = shuffleArray([...quiz.questions]);
-            shuffled.forEach(q => {
-              allQs.push({ ...q, _quizId: quiz.id, _quizTitle: quiz.title, _subject: quiz.subject, _area: mapSubjectToArea(quiz.subject) });
-            });
-          }
-        });
-
-        if (allQs.length === 0) { showToast('Nenhuma questão encontrada nos quizzes selecionados', 'error'); return; }
-
-        const sim = {
-          user_id: user ? user.id : null,
-          title,
-          quiz_ids: ids,
-          questions: allQs,
-          answers: {},
-          time_limit: timeLimit,
-          time_spent: 0,
-          status: 'active',
-          started_at: new Date().toISOString()
-        };
-        await addSimulado(sim);
-        const sims = await getSimulados();
-        currentSim = sims[0];
-        createOverlay.classList.remove('show');
-        startPlay(currentSim);
-      });
-
-      // --- PLAY MODE ---
+      /* ==================== PLAY MODE ==================== */
       function startPlay(sim) {
         currentSim = sim;
         questions = sim.questions || [];
@@ -360,17 +236,21 @@
 
         document.getElementById('mainView').style.display = 'none';
         document.getElementById('playOverlay').classList.add('show');
-        document.getElementById('playTitle').textContent = sim.title;
+
+        const diffConfig = MASMORRA_DIFFICULTIES[sim.difficulty] || {};
+        document.getElementById('playTitle').textContent = 'Masmorra ' + (diffConfig.label || '');
+
+        document.getElementById('btnPauseTimer').style.display = '';
+        document.getElementById('btnFinish').style.display = '';
+        document.getElementById('simMap').style.display = '';
+        document.getElementById('simNav').style.display = '';
+        document.getElementById('areaTabs').style.display = '';
 
         renderAreaTabs();
         startTimer();
         renderMap();
         renderCurrentQuestion();
         startAutoSave();
-      }
-
-      function resumeSimulado(sim) {
-        startPlay(sim);
       }
 
       function autoFinish(sim) {
@@ -380,7 +260,7 @@
         const areaScores = {};
         sim.questions.forEach((q, idx) => {
           const ans = answers[idx];
-          const area = q._area;
+          const area = q._area || mapSubjectToArea(q.subject);
           if (!areaScores[area]) areaScores[area] = { score: 0, total: 0 };
           areaScores[area].total++;
           if (ans && ans.isCorrect) { score++; areaScores[area].score++; }
@@ -394,20 +274,17 @@
 
       function renderAreaTabs() {
         const tabs = document.getElementById('areaTabs');
-        const counts = {};
-        questions.forEach((q, i) => {
-          if (areaFilter && q._area !== areaFilter) return;
-          counts[q._area] = (counts[q._area] || 0) + 1;
+        const allCounts = {};
+        questions.forEach(q => {
+          const a = q._area || mapSubjectToArea(q.subject);
+          allCounts[a] = (allCounts[a] || 0) + 1;
         });
 
-        const allCounts = {};
-        questions.forEach(q => { allCounts[q._area] = (allCounts[q._area] || 0) + 1; });
-
         let html = `<button class="sim-area-tab ${!areaFilter ? 'active' : ''}" data-area="">Todas<span class="sim-area-tab-count">${questions.length}</span></button>`;
-        for (const [area, info] of Object.entries(SIMULADO_AREAS)) {
+        for (const [area, info] of Object.entries(MASMORRA_AREAS)) {
           const c = allCounts[area] || 0;
           if (c === 0) continue;
-          html += `<button class="sim-area-tab ${areaFilter === area ? 'active' : ''}" data-area="${area}">${info.name}<span class="sim-area-tab-count">${c}</span></button>`;
+          html += `<button class="sim-area-tab ${areaFilter === area ? 'active' : ''}" data-area="${area}">${info.icon} ${info.name}<span class="sim-area-tab-count">${c}</span></button>`;
         }
         tabs.innerHTML = html;
 
@@ -425,7 +302,8 @@
       function getVisibleIndices() {
         const indices = [];
         questions.forEach((q, i) => {
-          if (!areaFilter || q._area === areaFilter) indices.push(i);
+          const a = q._area || mapSubjectToArea(q.subject);
+          if (!areaFilter || a === areaFilter) indices.push(i);
         });
         return indices;
       }
@@ -457,46 +335,34 @@
 
         const vis = getVisibleIndices();
         const displayNum = vis.indexOf(currentIdx) + 1;
-        const areaInfo = SIMULADO_AREAS[q._area] || { name: q._area };
-        const s = SUBJECTS[q._subject] || { name: q._subject, color: '#999', colorLight: 'rgba(153,153,153,0.12)' };
+        const qArea = q._area || mapSubjectToArea(q.subject);
+        const areaInfo = MASMORRA_AREAS[qArea] || { name: qArea, icon: '' };
+        const s = SUBJECTS[q.subject] || { name: q.subject, color: '#999', colorLight: 'rgba(153,153,153,0.12)' };
         const answered = currentSim.answers[currentIdx];
 
+        const diffLabels = { easy: 'Fácil', medium: 'Média', hard: 'Difícil' };
+        const diffBadge = `<span class="sim-q-diff sim-q-diff-${q.difficulty || 'medium'}">${diffLabels[q.difficulty] || 'Média'}</span>`;
+
         let html = `
-          <div class="sim-question-header">Questao ${displayNum} de ${vis.length}</div>
-          <div class="sim-question-area-name" style="background:${s.colorLight};color:${s.color}">${s.name}</div>
+          <div class="sim-question-header">Questão ${displayNum} de ${vis.length} ${diffBadge}</div>
+          <div class="sim-question-area-name" style="background:${s.colorLight};color:${s.color}">${areaInfo.icon} ${s.name}</div>
           <div class="sim-question-text">${escapeHtml(q.question || q.text || '')}</div>`;
 
-        if (q.type === 'written') {
-          if (answered) {
-            html += `
-              <div class="written-comparison">
-                <div class="wc-box wc-yours"><div class="wc-label">Sua Resposta</div><div class="wc-text">${escapeHtml(answered.text || '(sem texto)')}</div></div>
-                <div class="wc-box wc-model"><div class="wc-label">Resposta Modelo</div><div class="wc-text">${escapeHtml(q.answer || q.modelAnswer || '(sem modelo)')}</div></div>
-              </div>
-              <div style="font-size:13px;color:${answered.isCorrect ? '#00b894' : '#e74c3c'};font-weight:600;margin-top:8px;">${answered.isCorrect ? 'Voce marcou: Acertei' : 'Voce marcou: Errei'}</div>`;
-          } else {
-            html += `
-              <textarea class="written-input" id="writtenInput" placeholder="Escreva sua resposta..."></textarea>
-              <button class="btn-verify" id="btnVerify">Verificar Resposta</button>`;
-          }
-        } else {
-          const letters = ['A', 'B', 'C', 'D'];
-          const opts = q.options || [];
-          const shuffledOpts = q._shuffledOptions || opts;
-          const correctIdx = q._correctIdx !== undefined ? q._correctIdx : q.correct;
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        const opts = q.options || [];
+        const correctIdx = q.correct;
 
-          if (answered) {
-            shuffledOpts.forEach((opt, i) => {
-              let cls = 'play-option disabled';
-              if (i === answered.selected) cls += answered.isCorrect ? ' correct' : ' wrong';
-              if (i === correctIdx && !answered.isCorrect) cls += ' correct';
-              html += `<button class="${cls}" disabled><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(opt)}</span></button>`;
-            });
-          } else {
-            shuffledOpts.forEach((opt, i) => {
-              html += `<button class="play-option" data-idx="${i}"><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(opt)}</span></button>`;
-            });
-          }
+        if (answered) {
+          opts.forEach((opt, i) => {
+            let cls = 'play-option disabled';
+            if (i === answered.selected) cls += answered.isCorrect ? ' correct' : ' wrong';
+            if (i === correctIdx && !answered.isCorrect) cls += ' correct';
+            html += `<button class="${cls}" disabled><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(opt)}</span></button>`;
+          });
+        } else {
+          opts.forEach((opt, i) => {
+            html += `<button class="play-option" data-idx="${i}"><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(opt)}</span></button>`;
+          });
         }
 
         area.innerHTML = html;
@@ -512,34 +378,13 @@
         document.getElementById('btnNext').disabled = visIdx >= vis.length - 1;
 
         // Bind events
-        if (q.type === 'written' && !answered) {
-          const verifyBtn = document.getElementById('btnVerify');
-          if (verifyBtn) {
-            verifyBtn.addEventListener('click', () => {
-              const text = document.getElementById('writtenInput').value.trim();
-              if (!text) return;
-              showConfirm('Você acertou esta questão?', () => {
-                currentSim.answers[currentIdx] = { text, isCorrect: true, type: 'written' };
-                saveSimuladoProgress(currentSim.id, currentSim.answers, timerSeconds);
-                renderCurrentQuestion();
-                renderMap();
-              }, () => {
-                currentSim.answers[currentIdx] = { text, isCorrect: false, type: 'written' };
-                saveSimuladoProgress(currentSim.id, currentSim.answers, timerSeconds);
-                renderCurrentQuestion();
-                renderMap();
-              });
-            });
-          }
-        }
-
-        if (q.type !== 'written' && !answered) {
+        if (!answered) {
           area.querySelectorAll('.play-option[data-idx]').forEach(btn => {
             btn.addEventListener('click', () => {
               const idx = parseInt(btn.dataset.idx);
               const isCorrect = idx === correctIdx;
               showConfirm('Confirmar resposta?', () => {
-                currentSim.answers[currentIdx] = { selected: idx, isCorrect, type: 'mc', correct: correctIdx };
+                currentSim.answers[currentIdx] = { selected: idx, isCorrect, correct: correctIdx };
                 saveSimuladoProgress(currentSim.id, currentSim.answers, timerSeconds);
                 renderCurrentQuestion();
                 renderMap();
@@ -549,7 +394,7 @@
         }
       }
 
-      // --- TIMER ---
+      /* ==================== TIMER ==================== */
       function startTimer() {
         clearInterval(timerInterval);
         timerPaused = false;
@@ -582,7 +427,7 @@
           : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
       });
 
-      // --- AUTO SAVE ---
+      /* ==================== AUTO SAVE ==================== */
       function startAutoSave() {
         clearInterval(autoSaveInterval);
         autoSaveInterval = setInterval(() => {
@@ -593,7 +438,7 @@
         }, 30000);
       }
 
-      // --- NAVIGATION ---
+      /* ==================== NAVIGATION ==================== */
       document.getElementById('btnPrev').addEventListener('click', () => {
         const vis = getVisibleIndices();
         const vi = vis.indexOf(currentIdx);
@@ -606,12 +451,12 @@
         if (vi < vis.length - 1) { currentIdx = vis[vi + 1]; renderCurrentQuestion(); renderMap(); }
       });
 
-      // --- FINISH ---
+      /* ==================== FINISH ==================== */
       document.getElementById('btnFinish').addEventListener('click', () => {
         const total = questions.length;
         const answeredCount = Object.keys(currentSim.answers).length;
         const pending = total - answeredCount;
-        let msg = 'Finalizar simulado?';
+        let msg = 'Finalizar sessão?';
         if (pending > 0) msg += `<br><span style="font-size:13px;color:var(--text-dim)">${pending} questão(ões) sem resposta.</span>`;
         showConfirm(msg, () => finishSim());
       });
@@ -625,7 +470,7 @@
         const areaScores = {};
         questions.forEach((q, idx) => {
           const ans = currentSim.answers[idx];
-          const area = q._area;
+          const area = q._area || mapSubjectToArea(q.subject);
           if (!areaScores[area]) areaScores[area] = { score: 0, total: 0 };
           areaScores[area].total++;
           if (ans && ans.isCorrect) { score++; areaScores[area].score++; }
@@ -648,12 +493,14 @@
         renderSimList();
       }
 
-      // --- RESULT VIEW ---
+      /* ==================== RESULT VIEW ==================== */
       function showResult(sim) {
         document.getElementById('mainView').style.display = 'none';
         const overlay = document.getElementById('playOverlay');
         overlay.classList.add('show');
-        document.getElementById('playTitle').textContent = sim.title + ' - Resultado';
+
+        const diffConfig = MASMORRA_DIFFICULTIES[sim.difficulty] || {};
+        document.getElementById('playTitle').textContent = 'Masmorra ' + (diffConfig.label || '') + ' - Resultado';
         document.getElementById('simTimerDisplay').textContent = '';
         document.getElementById('btnPauseTimer').style.display = 'none';
         document.getElementById('btnFinish').style.display = 'none';
@@ -670,17 +517,16 @@
         const pct = sim.pct || 0;
         const msg = pct >= 80 ? 'Excelente!' : pct >= 50 ? 'Bom trabalho!' : 'Continue estudando!';
 
-        const colors = { linguagens: '#fd79a8', humanas: '#b2bec3', natureza: '#00b894', matematica: '#6c5ce7' };
-
         let areasHtml = '';
-        for (const [area, info] of Object.entries(SIMULADO_AREAS)) {
+        for (const [area, info] of Object.entries(MASMORRA_AREAS)) {
           const as = (sim.area_scores || {})[area];
           if (!as) continue;
-          const c = colors[area];
+          const sInfo = SUBJECTS[Object.keys(SUBJECTS).find(k => mapSubjectToArea(k) === area)] || { color: '#d4a056' };
+          const c = sInfo.color || '#d4a056';
           areasHtml += `
             <div class="sim-area-result">
               <div class="sim-area-result-header">
-                <span class="sim-area-result-name" style="color:${c}">${info.name}</span>
+                <span class="sim-area-result-name" style="color:${c}">${info.icon} ${info.name}</span>
                 <span class="sim-area-result-pct" style="color:${c}">${as.pct || 0}%</span>
               </div>
               <div class="sim-area-result-score">${as.score || 0} de ${as.total || 0} acertos</div>
@@ -689,7 +535,7 @@
         }
 
         let answersGrid = '';
-        questions.forEach((q, idx) => {
+        (sim.questions || questions).forEach((q, idx) => {
           const ans = sim.answers[idx];
           const cls = ans && ans.isCorrect ? 'correct' : 'wrong';
           const icon = ans && ans.isCorrect
@@ -699,28 +545,27 @@
         });
 
         let reviewHtml = '';
-        questions.forEach((q, idx) => {
+        (sim.questions || questions).forEach((q, idx) => {
           const ans = sim.answers[idx];
           if (ans && !ans.isCorrect) {
-            const letters = ['A', 'B', 'C', 'D'];
-            const opts = q._shuffledOptions || q.options || [];
-            const correctIdx = q._correctIdx !== undefined ? q._correctIdx : q.correct;
+            const letters = ['A', 'B', 'C', 'D', 'E'];
+            const opts = q.options || [];
             reviewHtml += `
               <div class="sim-review-item">
                 <div class="sim-review-question">${escapeHtml(q.question || q.text || '')}</div>
-                <div class="sim-review-answer wrong-text">Sua resposta: ${escapeHtml(ans.type === 'mc' ? (letters[ans.selected] + ') ' + (opts[ans.selected] || '')) : (ans.text || ''))}</div>
-                <div class="sim-review-answer correct-text">Resposta correta: ${escapeHtml(ans.type === 'mc' ? (letters[correctIdx] + ') ' + (opts[correctIdx] || '')) : (q.answer || q.modelAnswer || ''))}</div>
+                <div class="sim-review-answer wrong-text">Sua resposta: ${letters[ans.selected]}) ${escapeHtml(opts[ans.selected] || '')}</div>
+                <div class="sim-review-answer correct-text">Resposta correta: ${letters[q.correct]}) ${escapeHtml(opts[q.correct] || '')}</div>
               </div>`;
           }
         });
 
-        const area = document.getElementById('questionArea');
-        area.innerHTML = `
+        const qArea = document.getElementById('questionArea');
+        qArea.innerHTML = `
           <div class="sim-result">
             <div class="sim-result-header">
               <div class="sim-result-circle"><span class="sim-result-pct">${pct}%</span></div>
               <div class="sim-result-msg">${msg}</div>
-              <div class="sim-result-detail">${sim.score} de ${sim.total} acertos &middot; Tempo: ${timeStr}</div>
+              <div class="sim-result-detail">${sim.score || 0} de ${sim.total || 0} acertos · Tempo: ${timeStr}</div>
             </div>
             <div class="sim-area-results">${areasHtml}</div>
             <div style="margin-bottom:12px;font-size:13px;color:var(--text-dim);font-weight:600;">Respostas</div>
@@ -739,37 +584,31 @@
         document.getElementById('btnCloseResult').addEventListener('click', () => {
           document.getElementById('playOverlay').classList.remove('show');
           document.getElementById('mainView').style.display = '';
-          document.getElementById('btnPauseTimer').style.display = '';
-          document.getElementById('btnFinish').style.display = '';
-          document.getElementById('simMap').style.display = '';
-          document.getElementById('simNav').style.display = '';
-          document.getElementById('areaTabs').style.display = '';
           renderSimList();
         });
 
         const exportBtn = document.getElementById('btnExportReview');
         if (exportBtn) {
           exportBtn.addEventListener('click', () => {
-            let txt = 'REVISÃO - ' + sim.title + '\n';
+            let txt = 'REVISÃO - ' + (sim.title || 'Masmorra') + '\n';
             txt += '='.repeat(50) + '\n\n';
-            txt += 'Resultado: ' + sim.score + '/' + sim.total + ' (' + pct + '%)\n';
+            txt += 'Resultado: ' + (sim.score || 0) + '/' + (sim.total || 0) + ' (' + pct + '%)\n';
             txt += 'Tempo: ' + timeStr + '\n\n';
-            questions.forEach((q, idx) => {
+            (sim.questions || questions).forEach((q, idx) => {
               const ans = sim.answers[idx];
               if (ans && !ans.isCorrect) {
-                const letters = ['A', 'B', 'C', 'D'];
-                const opts = q._shuffledOptions || q.options || [];
-                const correctIdx = q._correctIdx !== undefined ? q._correctIdx : q.correct;
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                const opts = q.options || [];
                 txt += 'Q' + (idx + 1) + ': ' + (q.question || q.text || '') + '\n';
-                txt += '  Errada: ' + (ans.type === 'mc' ? letters[ans.selected] + ') ' + (opts[ans.selected] || '') : ans.text || '') + '\n';
-                txt += '  Correta: ' + (ans.type === 'mc' ? letters[correctIdx] + ') ' + (opts[correctIdx] || '') : (q.answer || q.modelAnswer || '')) + '\n\n';
+                txt += '  Errada: ' + letters[ans.selected] + ') ' + (opts[ans.selected] || '') + '\n';
+                txt += '  Correta: ' + letters[q.correct] + ') ' + (opts[q.correct] || '') + '\n\n';
               }
             });
             txt += 'Exportado em: ' + new Date().toLocaleString('pt-BR');
             const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'revisao_simulado_' + (sim.title || '').replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
+            a.download = 'revisao_masmorra_' + new Date().toISOString().slice(0,10) + '.txt';
             a.click();
             URL.revokeObjectURL(a.href);
             showToast('Revisão exportada!', 'success');
@@ -777,7 +616,7 @@
         }
       }
 
-      // --- CONFIRM DIALOG ---
+      /* ==================== CONFIRM DIALOG ==================== */
       let confirmYesFn = null;
       let confirmNoFn = null;
 
@@ -798,7 +637,7 @@
         if (confirmNoFn) confirmNoFn();
       });
 
-      // --- INIT ---
+      /* ==================== INIT ==================== */
       await renderSimList();
     })();
   </script>

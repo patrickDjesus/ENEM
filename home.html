@@ -148,8 +148,8 @@
           <circle class="rune-ring-inner" cx="60" cy="60" r="44"/>
         </svg>
         <div class="rune-ring-center">
-          <span class="rune-goal-num" id="streakGoalNum">0/3</span>
-          <span class="rune-goal-label">meta</span>
+          <span class="rune-goal-num" id="streakGoalNum">0/100</span>
+          <span class="rune-goal-label">dias</span>
         </div>
         <input type="hidden" id="streakGoalFill" value="0">
       </div>
@@ -159,7 +159,7 @@
           <span class="streak-best" id="streakBest">Melhor recorde: 0 dias</span>
         </div>
         <div class="streak-bar-container">
-          <div class="streak-bar-label">Progresso diário</div>
+          <div class="streak-bar-label">Progresso da jornada</div>
           <div class="streak-goal-bar">
             <div class="streak-goal-fill" id="streakGoalFillBar" style="width:0%"></div>
           </div>
@@ -238,23 +238,13 @@
 
       const currentUser = getCurrentUser();
       const userName = currentUser ? currentUser.name : 'Aventureiro';
-      const hour = new Date().getHours();
-      const greetings = [
-        { range: [5, 12], text: 'Aurora do Saber', emoji: '\u2600\uFE0F' },
-        { range: [12, 18], text: 'Mediodia Heroico', emoji: '\u2694\uFE0F' },
-        { range: [18, 22], text: 'Toque de Recolhida', emoji: '\uD83C\uDF19' },
-        { range: [22, 5], text: 'Vigilia Noturna', emoji: '\u2B50' }
-      ];
-      const g = greetings.find(gr => {
-        if (gr.range[0] < gr.range[1]) return hour >= gr.range[0] && hour < gr.range[1];
-        return hour >= gr.range[0] || hour < gr.range[1];
-      }) || greetings[0];
-      document.getElementById('greeting').textContent = g.text + ', ' + userName.split(' ')[0] + ' ' + g.emoji;
+      document.getElementById('greeting').textContent = 'Olá, ' + userName.split(' ')[0] + '!';
 
       const streakData = updateStreakOnLogin();
       document.getElementById('streakCount').textContent = streakData.streak;
-      document.getElementById('streakGoalNum').textContent = streakData.dailyDone + '/' + streakData.dailyGoal;
-      const goalPct = Math.min(100, Math.round((streakData.dailyDone / streakData.dailyGoal) * 100));
+      const STREAK_GOAL = 100;
+      document.getElementById('streakGoalNum').textContent = Math.min(streakData.streak, STREAK_GOAL) + '/' + STREAK_GOAL;
+      const goalPct = Math.min(100, Math.round((streakData.streak / STREAK_GOAL) * 100));
       document.getElementById('streakGoalFillBar').style.width = goalPct + '%';
       document.getElementById('streakGoalFill').value = goalPct;
       const circumference = 2 * Math.PI * 52;

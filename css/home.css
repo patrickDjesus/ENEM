@@ -264,7 +264,7 @@ body {
 .potion-card[data-delay="2"] { animation-delay: 0.26s; }
 .potion-card[data-delay="3"] { animation-delay: 0.34s; }
 
-.potion-card:hover { animation: potionFloat 2s ease-in-out infinite; }
+.potion-card:hover { animation: potionFloat 2s ease-in-out infinite; opacity: 1; }
 
 .potion-flask {
   width: 100px;
