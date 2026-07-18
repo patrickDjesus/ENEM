@@ -37,6 +37,33 @@ function setLS(key, data) {
   localStorage.setItem('enem_' + key, JSON.stringify(data));
 }
 
+function _userLSKey(key) {
+  const user = getCurrentUser();
+  return user ? 'enem_' + key + '_' + user.id : 'enem_' + key;
+}
+
+function getLSUser(key, fallback) {
+  try {
+    const raw = localStorage.getItem(_userLSKey(key));
+    if (raw !== null) return JSON.parse(raw);
+  } catch { /* empty */ }
+  return fallback !== undefined ? fallback : [];
+}
+
+function setLSUser(key, data) {
+  localStorage.setItem(_userLSKey(key), JSON.stringify(data));
+}
+
+function migrateGlobalToUser(key) {
+  const user = getCurrentUser();
+  if (!user) return;
+  const userKey = _userLSKey(key);
+  const globalKey = 'enem_' + key;
+  if (localStorage.getItem(userKey) === null && localStorage.getItem(globalKey) !== null) {
+    localStorage.setItem(userKey, localStorage.getItem(globalKey));
+  }
+}
+
 /* ==================== USERS ==================== */
 const DEFAULT_ADMIN = {
   id: 1,
@@ -379,7 +406,8 @@ async function removeQuiz(id) {
 
 /* ==================== PINS (FAVORITES) ==================== */
 function getPinned() {
-  return getLS('pinned');
+  migrateGlobalToUser('pinned');
+  return getLSUser('pinned');
 }
 
 function togglePin(type, id) {
@@ -387,7 +415,7 @@ function togglePin(type, id) {
   const key = type + '_' + id;
   const idx = pins.indexOf(key);
   if (idx >= 0) { pins.splice(idx, 1); } else { pins.push(key); }
-  setLS('pinned', pins);
+  setLSUser('pinned', pins);
   return idx < 0;
 }
 
@@ -397,21 +425,22 @@ function isPinned(type, id) {
 
 /* ==================== PROGRESS (CONTINUE WHERE LEFT OFF) ==================== */
 function saveProgress(type, id, data) {
-  const progress = getLS('progress');
+  migrateGlobalToUser('progress');
+  const progress = getLSUser('progress');
   const key = type + '_' + id;
   const existing = progress.findIndex(p => p.key === key);
   const entry = { key, type, id, ...data, updated_at: new Date().toISOString() };
   if (existing >= 0) progress[existing] = entry; else progress.push(entry);
-  setLS('progress', progress);
+  setLSUser('progress', progress);
 }
 
 function getProgress(type, id) {
-  const progress = getLS('progress');
+  const progress = getLSUser('progress');
   return progress.find(p => p.key === (type + '_' + id)) || null;
 }
 
 function getRecentProgress() {
-  const progress = getLS('progress');
+  const progress = getLSUser('progress');
   return progress.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 5);
 }
 
@@ -595,28 +624,30 @@ function shuffleArray(arr) {
 
 /* ==================== BOOKMARKS (DOCUMENTS) ==================== */
 function getBookmarks(docId) {
-  const all = getLS('bookmarks');
+  migrateGlobalToUser('bookmarks');
+  const all = getLSUser('bookmarks');
   return all.filter(b => b.docId === docId);
 }
 
 function addBookmark(docId, label, scrollPct) {
-  const all = getLS('bookmarks');
+  const all = getLSUser('bookmarks');
   all.push({ id: Date.now(), docId, label, scrollPct, created_at: new Date().toISOString() });
-  setLS('bookmarks', all);
+  setLSUser('bookmarks', all);
 }
 
 function removeBookmark(bookmarkId) {
-  const all = getLS('bookmarks').filter(b => b.id !== bookmarkId);
-  setLS('bookmarks', all);
+  const all = getLSUser('bookmarks').filter(b => b.id !== bookmarkId);
+  setLSUser('bookmarks', all);
 }
 
 /* ==================== STREAKS & DAILY GOALS ==================== */
 function getStreakData() {
-  return getLS('streak_data')[0] || { streak: 0, lastDate: null, bestStreak: 0, dailyGoal: 3, dailyDone: 0, dailyDate: null };
+  migrateGlobalToUser('streak_data');
+  return getLSUser('streak_data', { streak: 0, lastDate: null, bestStreak: 0, dailyGoal: 3, dailyDone: 0, dailyDate: null });
 }
 
 function saveStreakData(data) {
-  setLS('streak_data', [data]);
+  setLSUser('streak_data', data);
 }
 
 function recordActivity() {
@@ -708,13 +739,19 @@ function mapSubjectToArea(subject) {
 }
 
 async function getSimulados() {
+  const user = getCurrentUser();
   if (sb) {
     try {
       const { data, error } = await sb.from('simulados').select('*').order('created_at', { ascending: false });
-      if (!error && data) { setLS('simulados', data); return data; }
+      if (!error && data) {
+        const filtered = user ? data.filter(s => s.user_id === user.id) : data;
+        setLS('simulados', filtered);
+        return filtered;
+      }
     } catch(e) { console.warn('Supabase getSimulados failed:', e); }
   }
-  return getLS('simulados');
+  const all = getLS('simulados');
+  return user ? all.filter(s => s.user_id === user.id) : all;
 }
 
 async function addSimulado(sim) {
@@ -803,4 +840,10 @@ function formatDate(iso) {
   if (diff < 86400000) return 'há ' + Math.floor(diff / 3600000) + 'h';
   if (diff < 172800000) return 'ontem';
   return d.toLocaleDateString('pt-BR');
+}
+
+/* ==================== XSS UTILS ==================== */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }

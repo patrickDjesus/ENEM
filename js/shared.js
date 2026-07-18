@@ -686,7 +686,7 @@ function initFloatingWidget() {
       </div>
       <div class="widget-body" id="widgetBody">
         <div id="tabNotes">
-          <textarea id="widgetNotes" placeholder="Escreva seus apontamentos aqui...">${localStorage.getItem('enem_widget_notes') || ''}</textarea>
+          <textarea id="widgetNotes" placeholder="Escreva seus apontamentos aqui...">${localStorage.getItem(_userLSKey ? _userLSKey('widget_notes') : 'enem_widget_notes') || ''}</textarea>
         </div>
         <div id="tabCalc" style="display:none">
           <div class="calc-display" id="calcDisplay">0</div>
@@ -736,7 +736,8 @@ function initFloatingWidget() {
 
   const notesArea = document.getElementById('widgetNotes');
   notesArea.addEventListener('input', () => {
-    localStorage.setItem('enem_widget_notes', notesArea.value);
+    const key = _userLSKey ? _userLSKey('widget_notes') : 'enem_widget_notes';
+    localStorage.setItem(key, notesArea.value);
   });
 
   const calcDisplay = document.getElementById('calcDisplay');

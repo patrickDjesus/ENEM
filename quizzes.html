@@ -130,6 +130,11 @@
       let questionIndex = 0;
       let quizKeyboardHandler = null;
 
+      function _quizDraftKey(quizId, qIdx) {
+        const user = getCurrentUser();
+        return 'quiz_draft_' + quizId + '_' + qIdx + '_' + (user ? user.id : 'anon');
+      }
+
       let confirmResolve = null;
       function showConfirm(text) {
         return new Promise(resolve => {
@@ -179,7 +184,7 @@
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 </div>
                 <div class="quiz-info">
-                  <h3>${q.title}</h3>
+                  <h3>${escapeHtml(q.title)}</h3>
                   <div class="quiz-meta">
                     <span class="quiz-subject-tag">${s ? s.name : 'Geral'}</span>
                     <span class="quiz-difficulty-tag diff-${q.difficulty || 'medio'}">${q.difficulty === 'facil' ? 'Facil' : q.difficulty === 'dificil' ? 'Dificil' : 'Medio'}</span>
@@ -425,31 +430,31 @@
           selectedIndex = -1;
 
           if (q.type === 'written') {
-            const savedDraft = localStorage.getItem('quiz_draft_' + quiz.id + '_' + q._origIdx) || '';
+            const savedDraft = localStorage.getItem(_quizDraftKey(quiz.id, q._origIdx)) || '';
             document.getElementById('playContent').innerHTML = `
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
               <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span class="q-type-badge badge-written">Escrita</span></div>
-              <p class="play-question">${q.text}</p>
-              <textarea id="writtenAnswer" class="written-input" rows="4" placeholder="Digite sua resposta aqui...">${savedDraft}</textarea>
+              <p class="play-question">${escapeHtml(q.text)}</p>
+              <textarea id="writtenAnswer" class="written-input" rows="4" placeholder="Digite sua resposta aqui...">${escapeHtml(savedDraft)}</textarea>
               <button class="btn-submit" id="btnCheckWritten" style="margin-top:12px">Verificar Resposta</button>
               <div id="writtenComparison" style="display:none"></div>
             `;
             document.getElementById('writtenAnswer').addEventListener('input', function() {
-              localStorage.setItem('quiz_draft_' + quiz.id + '_' + q._origIdx, this.value);
+              localStorage.setItem(_quizDraftKey(quiz.id, q._origIdx), this.value);
             });
             document.getElementById('btnCheckWritten').addEventListener('click', () => {
               const userAnswer = document.getElementById('writtenAnswer').value.trim();
               if (!userAnswer) { alert('Digite uma resposta.'); return; }
-              localStorage.removeItem('quiz_draft_' + quiz.id + '_' + q._origIdx);
+              localStorage.removeItem(_quizDraftKey(quiz.id, q._origIdx));
               document.getElementById('btnCheckWritten').style.display = 'none';
               document.getElementById('writtenAnswer').disabled = true;
               const comp = document.getElementById('writtenComparison');
               comp.style.display = 'block';
               comp.innerHTML = `
                 <div class="written-comparison">
-                  <div class="wc-box wc-yours"><span class="wc-label">Sua resposta</span><p>${userAnswer}</p></div>
-                  <div class="wc-box wc-model"><span class="wc-label">Resposta modelo</span><p>${q.answer}</p></div>
+                  <div class="wc-box wc-yours"><span class="wc-label">Sua resposta</span><p>${escapeHtml(userAnswer)}</p></div>
+                  <div class="wc-box wc-model"><span class="wc-label">Resposta modelo</span><p>${escapeHtml(q.answer)}</p></div>
                 </div>
                 <p class="wc-hint">Compare as respostas e avalie se acertou.</p>
                 <div class="wc-eval">
@@ -474,12 +479,12 @@
               ${renderTimerHtml()}
               <div class="play-progress-bar"><div class="play-progress" style="width:${pct}%"></div></div>
               <div class="play-counter">Questao ${current + 1} de ${shuffled.length} <span style="font-size:11px;color:var(--text-ghost)">(Use setas/teclado ou clique)</span></div>
-              <p class="play-question">${q.text}</p>
+              <p class="play-question">${escapeHtml(q.text)}</p>
               <div class="play-options" id="playOptions">
                 ${q.options.map((opt, i) => `
                   <button class="play-option" data-index="${i}">
                     <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                    <span class="option-text">${opt}</span>
+                    <span class="option-text">${escapeHtml(opt)}</span>
                   </button>
                 `).join('')}
               </div>
@@ -587,13 +592,13 @@
                   </div>
                   ${wrongAnswers.map(a => `
                     <div class="review-item was-wrong">
-                      <div class="review-question">${a.text}</div>
+                      <div class="review-question">${escapeHtml(a.text)}</div>
                       ${a.type === 'mc' ? `
-                        <div class="review-your-answer">Sua resposta: ${String.fromCharCode(65 + a.selected)}) ${a.options[a.selected]}</div>
-                        <div class="review-correct-answer">Resposta correta: ${String.fromCharCode(65 + a.correct)}) ${a.options[a.correct]}</div>
+                        <div class="review-your-answer">Sua resposta: ${String.fromCharCode(65 + a.selected)}) ${escapeHtml(a.options[a.selected])}</div>
+                        <div class="review-correct-answer">Resposta correta: ${String.fromCharCode(65 + a.correct)}) ${escapeHtml(a.options[a.correct])}</div>
                       ` : `
-                        <div class="review-your-answer">Sua resposta: ${a.userAnswer || '(vazio)'}</div>
-                        <div class="review-correct-answer">Resposta modelo: ${a.correctAnswer}</div>
+                        <div class="review-your-answer">Sua resposta: ${escapeHtml(a.userAnswer || '(vazio)')}</div>
+                        <div class="review-correct-answer">Resposta modelo: ${escapeHtml(a.correctAnswer)}</div>
                       `}
                     </div>
                   `).join('')}

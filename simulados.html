@@ -236,7 +236,7 @@
           opt.innerHTML = `
             <input type="checkbox" value="${q.id}" class="sim-quiz-cb">
             <div class="sim-quiz-option-info">
-              <div class="sim-quiz-option-title">${q.title}</div>
+              <div class="sim-quiz-option-title">${escapeHtml(q.title)}</div>
               <div class="sim-quiz-option-meta">
                 <span>${SUBJECTS[q.subject] ? SUBJECTS[q.subject].name : q.subject}</span>
                 <span>${q.difficulty || 'medio'}</span>
@@ -463,14 +463,14 @@
         let html = `
           <div class="sim-question-header">Questao ${displayNum} de ${vis.length}</div>
           <div class="sim-question-area-name" style="background:${s.colorLight};color:${s.color}">${s.name}</div>
-          <div class="sim-question-text">${q.question || q.text || ''}</div>`;
+          <div class="sim-question-text">${escapeHtml(q.question || q.text || '')}</div>`;
 
         if (q.type === 'written') {
           if (answered) {
             html += `
               <div class="written-comparison">
-                <div class="wc-box wc-yours"><div class="wc-label">Sua Resposta</div><div class="wc-text">${answered.text || '(sem texto)'}</div></div>
-                <div class="wc-box wc-model"><div class="wc-label">Resposta Modelo</div><div class="wc-text">${q.answer || q.modelAnswer || '(sem modelo)'}</div></div>
+                <div class="wc-box wc-yours"><div class="wc-label">Sua Resposta</div><div class="wc-text">${escapeHtml(answered.text || '(sem texto)')}</div></div>
+                <div class="wc-box wc-model"><div class="wc-label">Resposta Modelo</div><div class="wc-text">${escapeHtml(q.answer || q.modelAnswer || '(sem modelo)')}</div></div>
               </div>
               <div style="font-size:13px;color:${answered.isCorrect ? '#00b894' : '#e74c3c'};font-weight:600;margin-top:8px;">${answered.isCorrect ? 'Voce marcou: Acertei' : 'Voce marcou: Errei'}</div>`;
           } else {
@@ -489,11 +489,11 @@
               let cls = 'play-option disabled';
               if (i === answered.selected) cls += answered.isCorrect ? ' correct' : ' wrong';
               if (i === correctIdx && !answered.isCorrect) cls += ' correct';
-              html += `<button class="${cls}" disabled><span class="option-letter">${letters[i]}</span><span class="option-text">${opt}</span></button>`;
+              html += `<button class="${cls}" disabled><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(opt)}</span></button>`;
             });
           } else {
             shuffledOpts.forEach((opt, i) => {
-              html += `<button class="play-option" data-idx="${i}"><span class="option-letter">${letters[i]}</span><span class="option-text">${opt}</span></button>`;
+              html += `<button class="play-option" data-idx="${i}"><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(opt)}</span></button>`;
             });
           }
         }
@@ -706,9 +706,9 @@
             const correctIdx = q._correctIdx !== undefined ? q._correctIdx : q.correct;
             reviewHtml += `
               <div class="sim-review-item">
-                <div class="sim-review-question">${q.question || q.text || ''}</div>
-                <div class="sim-review-answer wrong-text">Sua resposta: ${ans.type === 'mc' ? (letters[ans.selected] + ') ' + (opts[ans.selected] || '')) : (ans.text || '')}</div>
-                <div class="sim-review-answer correct-text">Resposta correta: ${ans.type === 'mc' ? (letters[correctIdx] + ') ' + (opts[correctIdx] || '')) : (q.answer || q.modelAnswer || '')}</div>
+                <div class="sim-review-question">${escapeHtml(q.question || q.text || '')}</div>
+                <div class="sim-review-answer wrong-text">Sua resposta: ${escapeHtml(ans.type === 'mc' ? (letters[ans.selected] + ') ' + (opts[ans.selected] || '')) : (ans.text || ''))}</div>
+                <div class="sim-review-answer correct-text">Resposta correta: ${escapeHtml(ans.type === 'mc' ? (letters[correctIdx] + ') ' + (opts[correctIdx] || '')) : (q.answer || q.modelAnswer || ''))}</div>
               </div>`;
           }
         });

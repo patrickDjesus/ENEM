@@ -244,9 +244,9 @@
       }
 
       // --- Video watch time: Supabase + localStorage cache (per-user) ---
-      const _userVideoTimeCache = {}; // in-memory cache, synced to localStorage
+      const _userVideoTimeCache = {};
       let _debounceTimer = null;
-      let _pendingFlush = false;
+      let _isFlushing = false;
 
       function _videoTimeLSKey() {
         const user = getCurrentUser();
@@ -256,18 +256,17 @@
       async function loadVideoTimesFromDB() {
         const user = getCurrentUser();
         if (!user) return;
-        // Try Supabase first
+        // Load localStorage first (may have offline data)
+        try {
+          const cached = JSON.parse(localStorage.getItem(_videoTimeLSKey()) || '{}');
+          Object.assign(_userVideoTimeCache, cached);
+        } catch { /* empty */ }
+        // Merge with Supabase data, taking max for each video
         const dbTimes = await getAllVideoTimesFromDB(user.id);
-        if (Object.keys(dbTimes).length > 0) {
-          Object.assign(_userVideoTimeCache, dbTimes);
-          localStorage.setItem(_videoTimeLSKey(), JSON.stringify(_userVideoTimeCache));
-        } else {
-          // Fallback: load from localStorage
-          try {
-            const cached = JSON.parse(localStorage.getItem(_videoTimeLSKey()) || '{}');
-            Object.assign(_userVideoTimeCache, cached);
-          } catch { /* empty */ }
+        for (const [vidId, dbSec] of Object.entries(dbTimes)) {
+          _userVideoTimeCache[vidId] = Math.max(_userVideoTimeCache[vidId] || 0, dbSec);
         }
+        localStorage.setItem(_videoTimeLSKey(), JSON.stringify(_userVideoTimeCache));
       }
 
       function getVideoTimeSpent() {
@@ -282,26 +281,43 @@
       }
 
       function _scheduleSupabaseFlush() {
-        if (_debounceTimer) return; // already scheduled
-        _pendingFlush = true;
+        if (_debounceTimer) return;
         _debounceTimer = setTimeout(() => {
           _debounceTimer = null;
           _flushToSupabase();
-        }, 30000); // 30s debounce
+        }, 30000);
       }
 
       async function _flushToSupabase() {
-        const user = getCurrentUser();
-        if (!user) return;
-        const keys = Object.keys(_userVideoTimeCache);
-        for (const vidId of keys) {
-          await saveVideoTimeToDB(user.id, vidId, _userVideoTimeCache[vidId]);
+        if (_isFlushing) return;
+        _isFlushing = true;
+        try {
+          const user = getCurrentUser();
+          if (!user) return;
+          const snapshot = { ..._userVideoTimeCache };
+          for (const vidId of Object.keys(snapshot)) {
+            if (snapshot[vidId] != null) {
+              await saveVideoTimeToDB(user.id, vidId, snapshot[vidId]);
+            }
+          }
+        } finally {
+          _isFlushing = false;
         }
       }
 
       async function _flushToSupabaseNow() {
         if (_debounceTimer) { clearTimeout(_debounceTimer); _debounceTimer = null; }
         await _flushToSupabase();
+      }
+
+      function _flushCurrentVideoToSupabase() {
+        if (!currentVideoId) return;
+        const user = getCurrentUser();
+        if (!user) return;
+        const secs = _userVideoTimeCache[currentVideoId];
+        if (secs != null) {
+          saveVideoTimeToDB(user.id, currentVideoId, secs);
+        }
       }
 
       function formatTimeSpent(totalSec) {
@@ -333,11 +349,11 @@
       const listView = document.getElementById('listView');
       const watchView = document.getElementById('watchView');
 
-      async function showListView() {
-        if (currentVideoId) {
+      function showListView() {
+        const leavingVideoId = currentVideoId;
+        if (leavingVideoId) {
           const elapsed = stopSessionTimer();
-          if (elapsed > 0) saveVideoTimeSpent(currentVideoId, elapsed);
-          await _flushToSupabaseNow();
+          if (elapsed > 0) saveVideoTimeSpent(leavingVideoId, elapsed);
         } else {
           stopSessionTimer();
         }
@@ -347,6 +363,8 @@
         document.querySelector('.main').style.marginLeft = '';
         document.getElementById('watchPlayer').innerHTML = '';
         currentVideoId = null;
+        // Flush to Supabase after UI update (non-blocking)
+        _flushToSupabaseNow();
       }
 
       function showWatchView() {
@@ -466,10 +484,10 @@
           const el = document.createElement('div');
           el.className = 'comment-item';
           el.innerHTML = `
-            <div class="comment-avatar">${(c.user_name || '?')[0].toUpperCase()}</div>
+            <div class="comment-avatar">${escapeHtml((c.user_name || '?')[0].toUpperCase())}</div>
             <div class="comment-body">
-              <div class="comment-meta"><strong>${c.user_name}</strong> ${formatDate(c.created_at)}</div>
-              <div class="comment-text">${c.text}</div>
+              <div class="comment-meta"><strong>${escapeHtml(c.user_name)}</strong> ${formatDate(c.created_at)}</div>
+              <div class="comment-text">${escapeHtml(c.text)}</div>
             </div>
           `;
           list.appendChild(el);
@@ -574,7 +592,10 @@
       }
 
       function sanitizeNoteHtml(html) {
-        return html.replace(/<\/?script|<\/?iframe|<\/?object|<\/?embed|<\/?form/gi, '<!-- stripped -->');
+        if (!html) return '';
+        return html
+          .replace(/<\/?script|<\/?iframe|<\/?object|<\/?embed|<\/?form|<\/?input|<\/?textarea|<\/?button/gi, '<!-- stripped -->')
+          .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
       }
 
       function stripHtml(html) {
@@ -742,23 +763,19 @@
         });
       });
 
-      // Save time on tab close
-      window.addEventListener('beforeunload', () => {
+      // Save time on tab close / visibility change
+      function _saveBeforeUnload() {
         if (currentVideoId) {
           const elapsed = stopSessionTimer();
           if (elapsed > 0) saveVideoTimeSpent(currentVideoId, elapsed);
         }
-        // Force sync to Supabase synchronously via sendBeacon fallback
-        const user = getCurrentUser();
-        if (user && Object.keys(_userVideoTimeCache).length > 0) {
-          // Try to cancel debounce and flush
-          if (_debounceTimer) { clearTimeout(_debounceTimer); _debounceTimer = null; }
-          const keys = Object.keys(_userVideoTimeCache);
-          for (const vidId of keys) {
-            // Best-effort: fire-and-forget (page is closing)
-            saveVideoTimeToDB(user.id, vidId, _userVideoTimeCache[vidId]);
-          }
-        }
+        // Fire-and-forget async save for current video only (best-effort)
+        if (currentVideoId) _flushCurrentVideoToSupabase();
+      }
+
+      window.addEventListener('beforeunload', _saveBeforeUnload);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') _saveBeforeUnload();
       });
 
       await loadVideoTimesFromDB();

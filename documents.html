@@ -234,10 +234,10 @@
           const el = document.createElement('div');
           el.className = 'comment-item';
           el.innerHTML = `
-            <div class="comment-avatar">${(c.user_name || '?')[0].toUpperCase()}</div>
+            <div class="comment-avatar">${escapeHtml((c.user_name || '?')[0].toUpperCase())}</div>
             <div class="comment-body">
-              <div class="comment-meta"><strong>${c.user_name}</strong> ${formatDate(c.created_at)}</div>
-              <div class="comment-text">${c.text}</div>
+              <div class="comment-meta"><strong>${escapeHtml(c.user_name)}</strong> ${formatDate(c.created_at)}</div>
+              <div class="comment-text">${escapeHtml(c.text)}</div>
             </div>
           `;
           list.appendChild(el);
